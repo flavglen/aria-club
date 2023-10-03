@@ -1,5 +1,4 @@
-import { getAuth } from 'firebase/auth';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { doc, getDoc, db } from '../firebase';
 import AuthCheck from './Auth.hook';
 

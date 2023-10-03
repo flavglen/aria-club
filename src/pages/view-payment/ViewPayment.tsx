@@ -5,12 +5,6 @@ import React, { useEffect } from 'react';
 import { db, collection, getDocs } from '../../firebase';
 import { ISelect } from '../add-payment/AddPayment';
 
-enum PaymentMode {
-    CASH = 1,
-    CARD = 2,
-    CHEQUE = 3,
-}
-
 type Payment = {
     user: ISelect;
     date: string;

@@ -1,5 +1,5 @@
 import { User, getAuth } from 'firebase/auth';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { app } from '../firebase';
 const auth = getAuth(app); // Use your Firebase App instance here
 

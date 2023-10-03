@@ -3,20 +3,20 @@ import { Column } from 'primereact/column';
 import { DataTable } from 'primereact/datatable';
 import { collection, db, getDocs } from '../../firebase';
 
-type Users = {
+type IUser = {
     name: string;
     email: string;
     phone: string;
 }
 
 const Users: React.FC = () => {
-    const [users, setUsers] = React.useState<Users[]>([]);
+    const [users, setUsers] = React.useState<IUser[]>([]);
     const getPayment = async () => {
         const customDocRef = collection(db, 'users');
         const paymentRef = await getDocs(customDocRef);
         const payment = paymentRef.docs.map(x => {
             return {...x.data()}
-        }) as Users[]
+        }) as IUser[]
         setUsers(payment);
     }
 

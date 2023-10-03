@@ -1,12 +1,10 @@
 import { Button } from 'primereact/button';
-import { Column } from 'primereact/column';
-import { DataTable } from 'primereact/datatable';
 import { Card } from 'primereact/card';
 import React, { useEffect } from 'react';
 import { InputText } from 'primereact/inputtext';
 import { Dropdown } from 'primereact/dropdown';
 import { Calendar } from 'primereact/calendar';
-import { collection, db, doc, getDoc, getDocs, setDoc } from '../../firebase';
+import { collection, db, doc, getDocs, setDoc } from '../../firebase';
 import AuthCheck from '../../hooks/Auth.hook';
 
 
