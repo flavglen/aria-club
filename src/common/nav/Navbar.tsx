@@ -1,7 +1,13 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import AuthCheck from '../../hooks/Auth.hook';
+import IsAdmin from '../../hooks/Admin.hook';
 
 const NavBar: React.FC = () => {
+    //const [user] = AuthCheck();
+    const [isAdmin] = IsAdmin();
+    
+    console.log('FFFF', isAdmin)
     return (
         <nav className="hs-accordion-group p-6 w-full flex flex-col flex-wrap" data-hs-accordion-always-open>
             <ul className="space-y-1.5">

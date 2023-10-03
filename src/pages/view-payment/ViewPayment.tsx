@@ -1,57 +1,65 @@
 import { Button } from 'primereact/button';
 import { Column } from 'primereact/column';
 import { DataTable } from 'primereact/datatable';
-import React from 'react';
+import React, { useEffect } from 'react';
+import { db, collection, getDocs } from '../../firebase';
+import { ISelect } from '../add-payment/AddPayment';
 
-enum PaymentMode  {
+enum PaymentMode {
     CASH = 1,
-    CARD = 2
+    CARD = 2,
+    CHEQUE = 3,
 }
 
 type Payment = {
-    name: string;
+    user: ISelect;
     date: string;
     amount: number
-    paymentMode: PaymentMode
+    mode: ISelect
 }
 
-const PAYMENT: Payment[]  = [
-    {
-        name: 'Melwin',
-        date: '10/08/2023',
-        amount: 1000,
-        paymentMode: PaymentMode.CARD
-    },
-    {
-        name: 'Ganesh',
-        date: '10/08/2023',
-        amount: 5000,
-        paymentMode: PaymentMode.CASH
-    },
-    {
-        name: 'manoj',
-        date: '10/08/2023',
-        amount: 2000,
-        paymentMode: PaymentMode.CARD
-    }
-]
-
 const ViewPayment: React.FC = () => {
+    const [payment, setPayment] = React.useState<Payment[]>([]);
+    const getPayment = async () => {
+        const customDocRef = collection(db, 'payment');
+        const paymentRef = await getDocs(customDocRef);
+        const payment = paymentRef.docs.map(x => {
+            return {...x.data()}
+        }) as Payment[]
+        setPayment(payment);
+    }
+
+    useEffect(() => {
+        getPayment();
+    }, [])
 
     const modeOfPaymentBody = (rowData: Payment) => {
         return (
             <>
-              {rowData.paymentMode === PaymentMode.CARD ? 'CARD' : 'CASH'}
+                {rowData.mode.name}
+            </>
+        )
+    };
+
+    const onEdit = () => {
+        
+    }
+
+    const statusBodyTemplate = () => {
+        return (
+            <>
+                <Button onClick={onEdit}>Edit</Button>
             </>
         )
     };
 
     return (
-        <DataTable value={PAYMENT} tableStyle={{ minWidth: '50rem' }}>
-            <Column field="name" header="Name"></Column>
+        <DataTable value={payment} tableStyle={{ minWidth: '50rem' }}>
+            <Column field="user.name" header="Name"></Column>
+            <Column field="amount" header="Amount" body={(row) => `₹ ${row.amount}`}></Column>
             <Column field="date" header="Date"></Column>
-            <Column field="amount" header="Amount"></Column>
-            <Column field="PaymentMode" header="Mode of Payment" body={modeOfPaymentBody}></Column>
+            <Column field="amount" header="Mode of Payment" body={modeOfPaymentBody}></Column>
+            <Column header="Action" body={statusBodyTemplate}></Column>
         </DataTable>
     )
 }
