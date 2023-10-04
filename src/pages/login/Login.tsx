@@ -19,6 +19,17 @@ const Login: React.FC = () => {
     }
 
     const login = () => {
+        if(!userName || !password) {
+            alert('enter details');
+            return;
+        }
+
+        if(userName.length <=10 ) {
+            alert('Enter valid phone number');
+            return;
+        }
+
+        //const customUserName = `${userName}@gmail.com`;
         signInWithEmailAndPassword(auth, userName, password)
         .then((userCredential) => {
           console.log(userCredential);
