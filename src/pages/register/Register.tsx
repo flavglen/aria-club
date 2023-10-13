@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
 import { app,  db, doc, setDoc } from '../../firebase';
 import { useNavigate } from "react-router-dom";
@@ -90,9 +91,9 @@ const Register: React.FC = () => {
                     <div className="text-center">
                         <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
                             Already have an account?
-                            <a className="text-blue-600 decoration-2 hover:underline font-medium" href="../examples/html/signin.html">
+                            <Link className="text-blue-600 decoration-2 hover:underline font-medium" to="/login">
                                 Sign in here
-                            </a>
+                            </Link>
                         </p>
                     </div>
                     <div className="mt-5">

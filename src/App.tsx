@@ -11,6 +11,8 @@ import Register from './pages/register/Register';
 import ViewPayment from './pages/view-payment/ViewPayment';
 import Login from './pages/login/Login';
 import AddPayment from './pages/add-payment/AddPayment';
+import Prizes from './pages/prizes/Prizes';
+import AddWinner from './pages/add-winner/AddWinner';
 
 const router = createBrowserRouter([
   {
@@ -39,6 +41,14 @@ const router = createBrowserRouter([
       {
         path: "login",
         element: <Login />
+      },
+      {
+        path: "prizes",
+        element: <Prizes />
+      },
+      {
+        path: "add-winner",
+        element: <AddWinner />
       }
     ],
   },

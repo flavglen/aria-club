@@ -1,6 +1,7 @@
 import React from 'react';
 import { Carousel } from 'primereact/carousel';
 import { Card } from 'primereact/card';
+import { Link } from 'react-router-dom';
 import "./prize.css";
 import Winners from '../winners/winners';
 
@@ -22,7 +23,7 @@ const Prize: React.FC = () => {
         id: '1000',
         name: 'Scooter',
         description: 'Product Description',
-        image: 'DeluxeYellow.png',
+        image: 'scooter.jpeg',
     },{
         id: '1000',
         name: 'Fridge',
@@ -67,6 +68,7 @@ const Prize: React.FC = () => {
         <>
             <Card title="Aira Lucky Scheme">
                 <Carousel value={prize} numVisible={1} numScroll={1} responsiveOptions={responsiveOptions} itemTemplate={productTemplate} />
+                <Link className='text-right' to='/prizes'><b>View More Prizes</b></Link>
             </Card>
 
             <Card style={{marginTop: 20}}>
