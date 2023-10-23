@@ -48,6 +48,7 @@ const ViewPayment: React.FC = () => {
 
     const onSave = () => {
         setModalVisible(false);
+        getPayment();
     }
 
     const statusBodyTemplate = (rowData) => {
@@ -61,7 +62,8 @@ const ViewPayment: React.FC = () => {
     return (
         <>
             <DataTable paginator rows={5} rowsPerPageOptions={[5, 10, 15, 20]} value={payment} tableStyle={{ minWidth: '50rem' }}>
-                <Column field="user.name" header="Name"></Column>
+                <Column field="user.name" header="Member Id"></Column>\
+                <Column field="user.username" header="Member Name"></Column>
                 <Column field="amount" header="Amount" body={(row) => `₹ ${row.amount}`}></Column>
                 <Column field="date" header="Date"></Column>
                 <Column field="amount" header="Mode of Payment" body={modeOfPaymentBody}></Column>

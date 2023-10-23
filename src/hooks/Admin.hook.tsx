@@ -1,26 +1,15 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import { doc, getDoc, db } from '../firebase';
 import AuthCheck from './Auth.hook';
+import { UserContext } from '../context/userProvider';
 
 type User = {
     role: string;
 }
 
 const IsAdmin = () => {
-    const [isAdmin, setIsAdmin] = useState<boolean>(false);
-    const [auth] = AuthCheck()
-    const fetchRole = async (uid: string) => {
-       const customDocRef = doc(db, 'roles', uid);
-       const userRole = (await getDoc(customDocRef)).data() as User;
-       setIsAdmin(userRole?.role === 'admin')
-    }
-
-    useEffect(() => {
-        if(auth?.uid)
-         fetchRole(auth?.uid)
-    }, [auth?.uid]);
-
-    return [isAdmin]
+   const {auth= null, isAdmin = false} = useContext(UserContext) || {};
+    return [isAdmin, auth]
 
 }
 

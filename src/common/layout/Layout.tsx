@@ -8,12 +8,12 @@ import AuthCheck from '../../hooks/Auth.hook';
 const auth = getAuth(app); 
 
 const Layout: React.FC = () => {
-    const [user] = AuthCheck();
+    const [user, setUser] = AuthCheck();
     const logout = () => {
       auth.signOut()
       .then(() => {
         // User is successfully logged out
-        console.log('User logged out');
+        setUser(null);
       })
       .catch((error) => {
         // Handle logout error
@@ -41,7 +41,7 @@ const Layout: React.FC = () => {
                   <div className="hs-dropdown-menu transition-[opacity,margin] duration hs-dropdown-open:opacity-100 opacity-0 hidden min-w-[15rem] bg-white shadow-md rounded-lg p-2  dark:border dark:border-gray-700" aria-labelledby="hs-dropdown-with-header">
                     <div className="py-3 px-5 -m-2 bg-gray-100 rounded-t-lg dark:bg-gray-700">
                       <p className="text-sm text-gray-500 dark:text-gray-400">{user?.uid ? 'Signed in as' : 'Sign in' }</p>
-                      <p className="text-sm font-medium text-gray-800 dark:text-gray-300">{user?.email}</p>
+                      <p className="text-sm font-medium text-gray-800 dark:text-gray-300">{user?.email && user?.email?.split('@')[0]}</p>
                     </div>
                     <div className="mt-2 py-2 first:pt-0 last:pb-0">
                       {user?.uid ?

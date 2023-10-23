@@ -8,6 +8,8 @@ const auth = getAuth(app); // Use your Firebase App instance here
 const Login: React.FC = () => {
     const [userName, setUserName] = React.useState("");
     const [password, setPassword] = React.useState("");
+    const [loading, setLoading] =  React.useState(false);
+
     const navigate = useNavigate();
 
     const updateUserName = (e) => {
@@ -19,24 +21,28 @@ const Login: React.FC = () => {
     }
 
     const login = () => {
+        const memberId = parseInt(userName);
+
         if(!userName || !password) {
             alert('enter details');
             return;
         }
-
-        if(userName.length <=10 ) {
-            alert('Enter valid phone number');
+        
+        if(isNaN(memberId)) {
+            alert('Enter a Valid Phone Member id');
             return;
         }
 
-        //const customUserName = `${userName}@gmail.com`;
-        signInWithEmailAndPassword(auth, userName, password)
+        setLoading(true);
+        const formatedMemberIdToEmail = `${memberId.toString()}@gmail.com`;
+        signInWithEmailAndPassword(auth, formatedMemberIdToEmail, password)
         .then((userCredential) => {
-          console.log(userCredential);
+          setLoading(false);
           navigate("/");
         })
         .catch((error) => {
-            console.log(error)
+            setLoading(false);
+            console.log(error);
         });
     }
 
@@ -48,7 +54,7 @@ const Login: React.FC = () => {
                         <form>
                             <div className="grid gap-y-4">
                                 <div>
-                                    <label className="block text-sm mb-2 dark:text-white">Phone Number</label>
+                                    <label className="block text-sm mb-2 dark:text-white">Member Id</label>
                                     <div className="relative border rounded">
                                         <input onChange={updateUserName} value={userName} type="text" id="phone" name="phone" className="py-3 px-4 block w-full border-gray-200 rounded-md text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400" required aria-describedby="email-error" />
                                         <div className="hidden absolute inset-y-0 right-0 flex items-center pointer-events-none pr-3">
@@ -73,7 +79,7 @@ const Login: React.FC = () => {
                                     <p className="hidden text-xs text-red-600 mt-2" id="password-error">8+ characters required</p>
                                 </div>
 
-                                <button type="button" onClick={login} className="py-3 px-4 inline-flex justify-center items-center gap-2 rounded-md border border-transparent font-semibold bg-blue-500 text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all text-sm dark:focus:ring-offset-gray-800">Sign up</button>
+                                <button type="button" disabled={loading} onClick={login} className="py-3 px-4 inline-flex justify-center items-center gap-2 rounded-md border border-transparent font-semibold bg-blue-500 text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all text-sm dark:focus:ring-offset-gray-800">Login</button>
                             </div>
                         </form>
 

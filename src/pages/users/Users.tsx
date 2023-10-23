@@ -23,11 +23,14 @@ const Users: React.FC = () => {
     useEffect(() => {
         getPayment();
     }, [])
+
     return (
         <DataTable  value={users} tableStyle={{ minWidth: '50rem' }}>
             <Column field="name" header="Name"></Column>
+            <Column field="memberId" header="Member Id"></Column>
             <Column field="phone" header="Phone"></Column>
             <Column field="email" header="Email"></Column>
+            <Column field="place" header="Place"></Column>
         </DataTable>
     )
 }

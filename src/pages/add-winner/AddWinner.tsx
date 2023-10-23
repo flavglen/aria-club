@@ -7,6 +7,9 @@ import { Button } from 'primereact/button';
 import { ISelect } from '../add-payment/AddPayment';
 import { collection, db, doc, getDocs, setDoc, updateDoc, imageDB, ref, uploadBytes, serverTimestamp } from '../../firebase';
 import { UploadResult  } from "firebase/storage";
+import { ToastHook } from '../../context/toastProvider';
+import { useNavigate } from "react-router-dom";
+import IsAdmin from '../../hooks/Admin.hook';
 
 export type IWinner = {
     user: {code: string, name: string, userId: string},
@@ -31,7 +34,16 @@ const AddWinner: React.FC = () => {
     const [selectedImage, setSelectedImage] = React.useState(null);
     const [imagePreview, setImagePreview] = React.useState(null);
     const fileUploadRef = React.useRef(null);
-   
+    const {fireToast} = ToastHook();
+    const navigate = useNavigate();
+    const [loading, setLoading] = React.useState(false);
+    const [isAdmin] = IsAdmin();
+
+    if(!isAdmin) {
+        alert('Only admins can access this page');
+        navigate('/');
+    }
+
     const onChange = (e, field: string) => {
         const value =  e.target.value;
         setWinner(prev => ({
@@ -98,7 +110,7 @@ const AddWinner: React.FC = () => {
         if(winnerDataCopy.date) {
             winnerDataCopy.date = winnerDataCopy.date.toLocaleString()
         }
-
+        setLoading(true);
         const imageMeta = await saveImage(selectedImage);
 
         if(!imageMeta) {
@@ -109,8 +121,12 @@ const AddWinner: React.FC = () => {
         const winnerDocRef = doc(db, 'winners', new Date().getTime().toString());
         try {
          await setDoc(winnerDocRef, {...winnerDataCopy, photo: imageMeta.ref.name} );
+            fireToast({severity:'success', summary: 'Success', detail:'Data has been saved', life: 3000});
+            setLoading(false)
+            navigate("/");
         } catch(e) {
-            console.error('failed to save data')
+            fireToast({severity:'error', summary: 'Failed', detail:'Failed to Save Data', life: 3000})
+            setLoading(false);
         }
     }
 
@@ -152,7 +168,7 @@ const AddWinner: React.FC = () => {
             </div>
 
             <div className="flex flex-column gap-2 flex-col w-20 mt-10">
-                <Button onClick={saveData}> Save </Button>
+                <Button onClick={saveData} disabled={loading}> Save </Button>
             </div>
         </Card>
     )

@@ -1,11 +1,11 @@
-import React, {useEffect} from 'react';
+import React, {useEffect,useRef} from 'react';
 import { collection, db, getDocs, limit, orderBy, query, ref, imageDB, updateDoc, doc } from '../../firebase';
 import { getDownloadURL } from '@firebase/storage';
 import { IWinner } from '../add-winner/AddWinner';
 import { ProgressSpinner } from 'primereact/progressspinner';
 import { SelectButton } from 'primereact/selectbutton';
 import IsAdmin from '../../hooks/Admin.hook';
-import AuthCheck from '../../hooks/Auth.hook';
+import { Toast } from 'primereact/toast';
 
 type winnerStatus = {
   first: string;
@@ -17,13 +17,10 @@ const Winners: React.FC = () => {
     const [winnerTwo, setWinnerTwo] = React.useState<IWinner | undefined>();
     const [isLoading, setIsLoading] = React.useState(false);
     const [isAdmin] = IsAdmin();
-    const [user] = AuthCheck();
-
-    console.log(user, isAdmin);
 
     useEffect(() => {
         fetchWinners();
-    }, []);
+    }, [isAdmin]);
 
     const getImage = async (imageName) => {
       const storageRef = ref(imageDB, imageName)
@@ -57,7 +54,6 @@ const Winners: React.FC = () => {
         const latestRecord = {...doc.data(), id: doc.id} as IWinner;
         // fetch image from fireStore
         latestRecord.imgSrc = await getImage(latestRecord.photo);
-        console.log(latestRecord)
         winnerData.push(latestRecord);
       });
 
@@ -82,21 +78,22 @@ const Winners: React.FC = () => {
       });
     }
 
-    // if(!isLoading && !winnerOne || !winnerTwo) {
-    //   return (
-    //     <span> Winners are yet to be announced...</span>
-    //   )
-    // }
-
     if(isLoading) {
       return (
         <ProgressSpinner />
       )
     }
 
+    if(!isLoading && !winnerOne || !winnerTwo) {
+      return (
+        <span> Winners are yet to be announced...</span>
+      )
+    }
+
     const getDate =  winnerOne?.date ? new Date(winnerOne.date).toDateString() : '';
 
     return (
+      <>
         <div className="max-w-[85rem] px-4 py-10 sm:px-6 lg:px-8 lg:py-14 mx-auto">
           <div className="max-w-2xl mx-auto text-center mb-10 lg:mb-14">
             <h2 className="text-2xl font-bold md:text-4xl md:leading-tight dark:text-white">Winners ({getDate}) </h2>
@@ -132,6 +129,7 @@ const Winners: React.FC = () => {
             </div>
           </div>
         </div>
+      </>
     )
 }
 

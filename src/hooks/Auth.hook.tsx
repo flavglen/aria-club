@@ -15,6 +15,7 @@ const [user, setUser] = useState<User | null>(null);
             setUser(authUser);
         } else {
             // User is signed out
+            console.log('xxxx');
             setUser(null);
         }
     });
@@ -23,7 +24,7 @@ const [user, setUser] = useState<User | null>(null);
     return () => unsubscribe();
     }, []);
 
-    return [user]
+    return [user, setUser]
 
 }
 

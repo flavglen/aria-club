@@ -8,6 +8,7 @@ import { Calendar } from 'primereact/calendar';
 import { collection, db, doc, getDocs, setDoc, updateDoc } from '../../firebase';
 import AuthCheck from '../../hooks/Auth.hook';
 import { Toast } from 'primereact/toast';
+import IsAdmin from '../../hooks/Admin.hook';
 
 export enum TYPE  {
     ADD = 'Add',
@@ -18,6 +19,7 @@ export type ISelect = {
     code: string;
     name: string
     userId?: string;
+    username?: string
 }
 
 type PaymentData = {
@@ -36,16 +38,21 @@ type IAddPayment = {
 }
 
 const AddPayment: React.FC<IAddPayment> = ({type =  TYPE.ADD , paymentDataForEdit, onSave}) => {
-    const [user] = AuthCheck();
+    const [isAdmin] = IsAdmin();
     const navigate = useNavigate();
     const [users, setUsers] = React.useState<ISelect[]>([]);
     const [isLoading, setIsLoading] = React.useState<boolean>(false);
     const toast = useRef<Toast>(null);
+
+    if(!IsAdmin) {
+        alert('Only admins can access this page');
+        navigate('/');
+    }
     
     const initPaymentData = () => {
         if(!paymentDataForEdit) {
                 return {
-                user: { name: '', code: '', userId: ''},
+                user: { name: '', code: '', userId: '', username: ''},
                 amount: 0,
                 mode: { name: '', code: ''},
                 date: '',
@@ -61,7 +68,7 @@ const AddPayment: React.FC<IAddPayment> = ({type =  TYPE.ADD , paymentDataForEdi
         if(users.length > 0 ) {
             setPaymentData(prev => ({
                 ...prev,
-                user: paymentDataForEdit?.user || { name: '', code: '', userId: ''}
+                user: paymentDataForEdit?.user || { name: '', code: '', userId: '', username: ''}
             }))
         }
       }, [users]); // The effect depends on the 'count' state
@@ -72,7 +79,7 @@ const AddPayment: React.FC<IAddPayment> = ({type =  TYPE.ADD , paymentDataForEdi
     const modeOfPayment = [
         { name: 'Cash', code: 'cash' },
         { name: 'Cheque', code: 'cheque' },
-        { name: 'Card', code: 'card' }
+        { name: 'UPI', code: 'upi' }
     ]
 
     const getUsers = async () => {
@@ -80,7 +87,7 @@ const AddPayment: React.FC<IAddPayment> = ({type =  TYPE.ADD , paymentDataForEdi
         const usersRef = await getDocs(customDocRef);
         const users = usersRef.docs.map(x => {
             const data = x.data();
-            return { name: data.name, code: data.name, userId: x.id }
+            return { name: data.memberId, code: data.memberId, userId: x.id, username: data.name }
         }) as ISelect[]
         console.log('USER', users);
         setUsers(users);
@@ -130,9 +137,9 @@ const AddPayment: React.FC<IAddPayment> = ({type =  TYPE.ADD , paymentDataForEdi
         <Card title={`${type} Payment`}>
             <form>
                 <div className="flex flex-column gap-2 flex-col">
-                    <label htmlFor="customer">Customer:</label>
+                    <label htmlFor="customer">Member Id:</label>
                     <Dropdown options={users} value={paymentData.user} disabled={type ===  TYPE.EDIT} onChange={(e) => onChange(e, 'user')} optionLabel="name"
-                        placeholder="Select a Customer" className="w-full md:w-14rem"/>
+                        placeholder="Select a Member Id" className="w-full md:w-14rem"/>
                 </div>
 
                 <div className="flex flex-column gap-2 flex-col">

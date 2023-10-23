@@ -13,10 +13,11 @@ import Login from './pages/login/Login';
 import AddPayment from './pages/add-payment/AddPayment';
 import Prizes from './pages/prizes/Prizes';
 import AddWinner from './pages/add-winner/AddWinner';
+import UserProvider from './context/userProvider';
 
 const router = createBrowserRouter([
   {
-    element: <Layout />,
+    element: <Layout/ >,
     children: [
       {
         path: "/",
