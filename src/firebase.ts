@@ -17,12 +17,12 @@ import {
 import { getStorage, ref, uploadBytes  } from "firebase/storage";
 
 const firebaseConfig = {
-  apiKey: process.env.FIREBASE_API_KEY,
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
   authDomain: "ariaclubindia.firebaseapp.com",
   projectId: "ariaclubindia",
   storageBucket: "ariaclubindia.appspot.com",
   messagingSenderId: "481878676349",
-  appId: process.env.FIREBASE_APP_ID,
+  appId: process.env.REACT_APP_FIREBASE_APP_ID,
   measurementId: "G-02FFMXYC6H"
 };
 
