@@ -30,11 +30,12 @@ type PaymentData = {
     userId: string | undefined;
     id?: string;
 }
+type onSaveType = (type: boolean) => void;
 
 type IAddPayment = {
     type?: TYPE
     paymentDataForEdit?: PaymentData | undefined
-    onSave?: Function
+    onSave?: onSaveType
 }
 
 const AddPayment: React.FC<IAddPayment> = ({type =  TYPE.ADD , paymentDataForEdit, onSave}) => {

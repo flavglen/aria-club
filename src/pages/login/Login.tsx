@@ -2,14 +2,15 @@ import React from 'react';
 import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 import { app } from '../../firebase';
 import { useNavigate } from "react-router-dom";
+import { ToastHook } from '../../context/toastProvider';
 
-const auth = getAuth(app); // Use your Firebase App instance here
+const auth = getAuth(app); 
 
 const Login: React.FC = () => {
     const [userName, setUserName] = React.useState("");
     const [password, setPassword] = React.useState("");
     const [loading, setLoading] =  React.useState(false);
-
+    const { fireToast } = ToastHook();
     const navigate = useNavigate();
 
     const updateUserName = (e) => {
@@ -36,11 +37,13 @@ const Login: React.FC = () => {
         setLoading(true);
         const formatedMemberIdToEmail = `${memberId.toString()}@gmail.com`;
         signInWithEmailAndPassword(auth, formatedMemberIdToEmail, password)
-        .then((userCredential) => {
+        .then(() => {
+          fireToast({ severity: 'success', summary: 'Login Successful', detail: 'You are now logged in!', life: 3000 })
           setLoading(false);
           navigate("/");
         })
         .catch((error) => {
+            fireToast({ severity: 'error', summary: 'Error', detail: 'failed to login. try again with valid credentials', life: 3000 })
             setLoading(false);
             console.log(error);
         });

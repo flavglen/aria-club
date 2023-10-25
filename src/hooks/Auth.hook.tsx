@@ -1,11 +1,11 @@
 import { User, getAuth } from 'firebase/auth';
 import { useEffect, useState } from 'react';
 import { app } from '../firebase';
-const auth = getAuth(app); // Use your Firebase App instance here
+const auth = getAuth(app);
 
 const AuthCheck = () => {
 
-const [user, setUser] = useState<User | null>(null);
+const [user, setUser] = useState<User|null>(null);
 
     useEffect(() => {
     // Add an authentication state listener
@@ -15,7 +15,6 @@ const [user, setUser] = useState<User | null>(null);
             setUser(authUser);
         } else {
             // User is signed out
-            console.log('xxxx');
             setUser(null);
         }
     });

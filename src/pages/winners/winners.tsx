@@ -45,7 +45,7 @@ const Winners: React.FC = () => {
     const fetchWinners = async () => {
       const winnerData:IWinner[] = []; 
       showSpinner();
-      var collectionRef = collection(db, 'winners');
+      const collectionRef = collection(db, 'winners');
       const q = query(collectionRef, orderBy('timestamp', 'desc'), limit(2));
 
       const querySnapshot = await getDocs(q);

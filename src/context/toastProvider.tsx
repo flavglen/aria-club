@@ -1,5 +1,6 @@
 import  React, {useRef, useContext} from 'react';
 import { Toast } from 'primereact/toast';
+import PropTypes from 'prop-types';
 
 export const ToastContext = React.createContext<any|null>(null);
 //const [toast, setToast] = useState<{severity:'success', summary: 'Success', detail:'Message Content', life: 3000} | null>(null);
@@ -19,6 +20,10 @@ const ToastProvider = ({children}) => {
         </ToastContext.Provider>
     )
 }
+
+ToastProvider.propTypes = {
+    children: PropTypes.node, // Validate children as a node
+};
 
 
 export const ToastHook = () => useContext(ToastContext);

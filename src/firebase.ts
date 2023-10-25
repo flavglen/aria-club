@@ -1,4 +1,4 @@
-import { initializeApp } from 'firebase/app';
+import { initializeApp } from "firebase/app";
 import { 
   getFirestore, 
   collection, 
@@ -13,7 +13,7 @@ import {
   orderBy,
   limit,
   serverTimestamp
-} from 'firebase/firestore/lite';
+} from "firebase/firestore/lite";
 import { getStorage, ref, uploadBytes  } from "firebase/storage";
 
 const firebaseConfig = {

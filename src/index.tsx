@@ -12,11 +12,12 @@ import "primereact/resources/primereact.min.css";
 import 'primeicons/primeicons.css';
 import './index.css';
 
+/* eslint-disable */
 ReactDOM.render(<PrimeReactProvider>
     <UserProvider>
         <ToastProvider>
             <App />
         </ToastProvider>
     </UserProvider>
-   
+
 </PrimeReactProvider>, document.getElementById('root'));

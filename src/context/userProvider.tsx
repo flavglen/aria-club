@@ -1,4 +1,5 @@
 import  React, {useState,useEffect} from 'react';
+import PropTypes from 'prop-types';
 import { getAuth, User } from 'firebase/auth';
 import { db, doc, getDoc, app } from '../firebase';
 const auth = getAuth(app);
@@ -33,6 +34,7 @@ const UserProvider = ({children}) => {
                 // User is signed out
                 setUser(null);
                 setIsAdmin(false);
+                sessionStorage.removeItem('AUTH_TOKEN');
             }
         });
 
@@ -45,5 +47,10 @@ const UserProvider = ({children}) => {
         </UserContext.Provider>
     )
 }
+
+UserProvider.propTypes = {
+    children: PropTypes.node, // Validate children as a node
+  };
+  
 
 export default UserProvider;
