@@ -14,6 +14,7 @@ import AddPayment from './pages/add-payment/AddPayment';
 import Prizes from './pages/prizes/Prizes';
 import AddWinner from './pages/add-winner/AddWinner';
 import UserProvider from './context/userProvider';
+import LoaderProvider from './context/loaderProvider';
 
 const router = createBrowserRouter([
   {
@@ -58,7 +59,9 @@ const router = createBrowserRouter([
 
 const App: React.FC = () => {
   return (
-    <RouterProvider router={router} />
+    <LoaderProvider>
+      <RouterProvider router={router} />
+    </LoaderProvider>
   );
 }
 

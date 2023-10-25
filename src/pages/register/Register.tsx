@@ -1,26 +1,28 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
-import { app,  db, doc, setDoc } from '../../firebase';
+import { app, collection, db, doc, query, setDoc } from '../../firebase';
 import { useNavigate } from "react-router-dom";
 import IsAdmin from '../../hooks/Admin.hook';
+import { getDocs, where } from 'firebase/firestore/lite';
+import { ToastHook } from '../../context/toastProvider';
 
 const auth = getAuth(app); // Use your Firebase App instance here
 
 const Register: React.FC = () => {
+    const { fireToast } = ToastHook();
     const [userName, setUserName] = React.useState("");
     const [password, setPassword] = React.useState("");
-    const [cPassword, setCPassword] = React.useState("");
     const [place, setPlace] = React.useState("");
     const [memberId, setMemberId] = React.useState(0);
     const [name, setName] = React.useState("");
-    const [loading, setLoading] =  React.useState(false);
+    const [loading, setLoading] = React.useState(false);
     const [isAdmin] = IsAdmin();
     const navigate = useNavigate();
 
-    if(!isAdmin) {
-        alert('Only admins can access this page');
-        navigate('/');
+    if (!isAdmin) {
+        //alert('Only admins can access this page');
+       // navigate('/');
     }
 
     const updateUserName = (e) => {
@@ -29,10 +31,6 @@ const Register: React.FC = () => {
 
     const updatePassword = (e) => {
         setPassword(e?.target?.value)
-    }
-
-    const updateCPassword = (e) => {
-        setCPassword(e?.target?.value)
     }
 
     const updateName = (e) => {
@@ -47,70 +45,126 @@ const Register: React.FC = () => {
         setPlace(e?.target?.value)
     }
 
-    const setUser = async ({email, uid, name,userNameToPhone}) => {
-       // Define the collection reference
-       const customDocRef = doc(db, 'users', uid);
+    const setUser = async ({ email, uid, userNameToPhone }) => {
+        // Define the collection reference
+        const customDocRef = doc(db, 'users', uid);
 
         // Add a document to the collection with the custom ID
-       return  await setDoc(customDocRef, {
-            email,
-            name,
-            memberId,
-            place,
-            phone: userNameToPhone
-        })
-        // .then(() => {
-        //      console.log('Document added with custom ID:', uid);
-        // })
-        // .catch((error) => {
-        //      console.error('Error adding document:', error);
-        // });
+        try {
+             await setDoc(customDocRef, {
+                email,
+                name,
+                memberId,
+                place,
+                phone: userNameToPhone
+            })
+            return true;
+        } catch (e) {
+            console.error(e)
+            return null;
+        }
     }
 
-    const setUserRole = async ({uid}, role) => {
-       // Define the collection reference
-       const customDocRef = doc(db, 'roles', uid);
+    const setUserRole = async ({ uid }, role) => {
+        // Define the collection reference
+        const customDocRef = doc(db, 'roles', uid);
 
         // Add a document to the collection with the custom ID
-       return await setDoc(customDocRef, {
-            role
-        })
-        // .then(() => {
-        //      console.log('Document added with custom ID:', uid);
-        //      setLoading(false);
-        //      // navigate to sign in page
-        //      navigate('/register')
-        // })
-        // .catch((error) => {
-        //      console.error('Error adding document:', error);
-        // });
-    }
-    
+        try {
+             await setDoc(customDocRef, {
+                role
+            })
 
-    const register = () => {
-        if(userName && name && password && cPassword === password && memberId) {
+            return true;
+        } catch (e) {
+            console.error(e)
+            return null;
+        }
+    }
+
+    const saveUser = async (data) => {
+        const apiUrl = 'http://127.0.0.1:5001/ariaclubindia/europe-west1/user/addUser';
+        //'https://europe-west1-ariaclubindia.cloudfunctions.net/user/addUser';
+        // Create the request headers
+        const headers = new Headers();
+        headers.append('Content-Type', 'application/json');
+        headers.append('Authorization', `Bearer ${sessionStorage.getItem('AUTH_TOKEN')}`)
+
+        // Configure the request options
+        const requestOptions = {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify(data), // Convert data to JSON string
+        };
+
+        try {
+            return await fetch(apiUrl, requestOptions)
+        } catch (e) {
+            return e;
+        }
+
+    }
+
+
+    const register = async () => {
+        if (userName && name && password && memberId) {
             const userNameToPhone = parseInt(userName);
-            if(isNaN(userNameToPhone)) {
-                alert('Enter a Valid Phone Number');
+            if (isNaN(userNameToPhone)) {
+                fireToast({ severity: 'error', summary: 'Failed', detail: 'Enter a Valid Phone Number', life: 3000 })
                 return;
             }
             setLoading(true);
             const formattedMemberId = `${memberId.toString()}@gmail.com`;
+            const stream = await saveUser({ email: formattedMemberId, password, phoneNumber: userNameToPhone })
+            const result = await stream?.json();
 
-            createUserWithEmailAndPassword(auth, formattedMemberId, password)
-            .then(async (userCredential) => {
-                const {user: {email, uid}} = userCredential;
-                //TODO check status of below updates
-                await setUser({email, uid, name, userNameToPhone});
-                await setUserRole({uid}, 'user');
-                setLoading(false)
-            })
-            .catch((error) => {
-                console.log(error);
+            if (!result.success) {
+                const messageFormatted = result.message ? result.message.replace('email address', 'Member Id') : 'something went wrong';
+                const codeFormatted = result.code ? result.code.replace('email', 'Member Id') : 'Error';
+                fireToast({ severity: 'error', summary: codeFormatted, detail: messageFormatted, life: 3000 })
+                return false
+            }
+
+            if(result.success && result.user) {
+                const {email, uid } = result.user
+                const userResult = await setUser({email, uid, userNameToPhone});
+
+                if(!userResult) {
+                    fireToast({ severity: 'error', summary: 'Error', detail: 'failed to add user', life: 3000 })
+                    setLoading(false);
+                    return;
+                }
+
+                const roleResult = await setUserRole({uid}, 'user');
+                if(!roleResult) {
+                    setLoading(false);
+                    fireToast({ severity: 'error', summary: 'Error', detail: 'failed to add user role', life: 3000 })
+                    return;
+                }
+
+                fireToast({ severity: 'success', summary: 'Success', detail: 'user has been added', life: 3000 })
                 setLoading(false);
-            });
+            } else {
+                fireToast({ severity: 'error', summary: 'Error', detail: 'something went wrong', life: 3000 })  
+                setLoading(false);
+            }
+            //const userResult = await setUser({email, uid, name, userNameToPhone});
+           // const roleResult = await setUserRole({uid}, 'user');
+
+            /* createUserWithEmailAndPassword(auth, formattedMemberId, password)
+             .then(async (userCredential) => {
+                 const {user: {email, uid}} = userCredential;
+                 //TODO check status of below updates
+                 await setUser({email, uid, name, userNameToPhone});
+                 await setUserRole({uid}, 'user');
+                 setLoading(false)
+             })
+             .catch((error) => {
+                 console.log(error);
+                 setLoading(false);
+             });*/
         } else {
-            alert('Please Enter All details');
+            fireToast({ severity: 'error', summary: 'Failed', detail: 'Please Enter All details', life: 3000 })
         }
     }
 
@@ -188,19 +242,7 @@ const Register: React.FC = () => {
                                     </div>
                                     <p className="hidden text-xs text-red-600 mt-2" id="password-error">8+ characters required</p>
                                 </div>
-                                <div>
-                                    <label className="block text-sm mb-2 dark:text-white">Confirm Password</label>
-                                    <div className="relative border rounded">
-                                        <input onChange={updateCPassword} type="password" id="confirm-password" name="confirm-password" className="py-3 px-4 block w-full border-gray-200 rounded-md text-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400" required aria-describedby="confirm-password-error" />
-                                        <div className="hidden absolute inset-y-0 right-0 flex items-center pointer-events-none pr-3">
-                                            <svg className="h-5 w-5 text-red-500" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
-                                                <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z" />
-                                            </svg>
-                                        </div>
-                                    </div>
-                                    <p className="hidden text-xs text-red-600 mt-2" id="confirm-password-error">Password does not match the password</p>
-                                </div>
-                                <button type="button" disabled={loading} onClick={register} className="py-3 px-4 inline-flex justify-center items-center gap-2 rounded-md border border-transparent font-semibold bg-blue-500 text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all text-sm dark:focus:ring-offset-gray-800">Sign up</button>
+                                <button type="button" onClick={register} className="py-3 px-4 inline-flex justify-center items-center gap-2 rounded-md border border-transparent font-semibold bg-blue-500 text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all text-sm dark:focus:ring-offset-gray-800">Sign up</button>
                             </div>
                         </form>
                     </div>

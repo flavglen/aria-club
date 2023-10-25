@@ -2,10 +2,9 @@ import React, {useEffect,useRef} from 'react';
 import { collection, db, getDocs, limit, orderBy, query, ref, imageDB, updateDoc, doc } from '../../firebase';
 import { getDownloadURL } from '@firebase/storage';
 import { IWinner } from '../add-winner/AddWinner';
-import { ProgressSpinner } from 'primereact/progressspinner';
 import { SelectButton } from 'primereact/selectbutton';
 import IsAdmin from '../../hooks/Admin.hook';
-import { Toast } from 'primereact/toast';
+import { LoaderHook } from '../../context/loaderProvider';
 
 type winnerStatus = {
   first: string;
@@ -15,11 +14,11 @@ type winnerStatus = {
 const Winners: React.FC = () => {
     const [winnerOne, setWinnerOne] = React.useState<IWinner | undefined>();
     const [winnerTwo, setWinnerTwo] = React.useState<IWinner | undefined>();
-    const [isLoading, setIsLoading] = React.useState(false);
     const [isAdmin] = IsAdmin();
+    const {loader, hideSpinner, showSpinner} = LoaderHook();
 
     useEffect(() => {
-        fetchWinners();
+      fetchWinners();
     }, [isAdmin]);
 
     const getImage = async (imageName) => {
@@ -45,7 +44,7 @@ const Winners: React.FC = () => {
 
     const fetchWinners = async () => {
       const winnerData:IWinner[] = []; 
-      setIsLoading(true);
+      showSpinner();
       var collectionRef = collection(db, 'winners');
       const q = query(collectionRef, orderBy('timestamp', 'desc'), limit(2));
 
@@ -61,7 +60,7 @@ const Winners: React.FC = () => {
       const winnerDataCopy = isAdmin ? winnerData : winnerData.filter((d) => d.active );
       const firstPrize =  winnerDataCopy?.find((winner:IWinner) => winner.type.code === 1);
       const secondPrize =  winnerDataCopy?.find((winner:IWinner) => winner.type.code === 2);
-      setIsLoading(false);
+      hideSpinner();
       setWinnerOne(firstPrize);
       setWinnerTwo(secondPrize);
     }
@@ -78,13 +77,7 @@ const Winners: React.FC = () => {
       });
     }
 
-    if(isLoading) {
-      return (
-        <ProgressSpinner />
-      )
-    }
-
-    if(!isLoading && !winnerOne || !winnerTwo) {
+    if(!loader && !winnerOne || !winnerTwo) {
       return (
         <span> Winners are yet to be announced...</span>
       )
@@ -134,4 +127,4 @@ const Winners: React.FC = () => {
 }
 
 
-export default Winners;
+export default React.memo(Winners);

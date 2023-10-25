@@ -1,6 +1,5 @@
 import  React, {useState,useEffect} from 'react';
 import { getAuth, User } from 'firebase/auth';
-import AuthCheck from '../hooks/Auth.hook';
 import { db, doc, getDoc, app } from '../firebase';
 const auth = getAuth(app);
 
@@ -11,21 +10,20 @@ type UserRole = {
 }
 
 const UserProvider = ({children}) => {
-    const [user, setUser] = useState<User | null>(null);
+    const [_, setUser] = useState<User | null>(null);
     const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
-    //const [auth] = AuthCheck()
-   
     const fetchRole = async (uid: string) => {
        const customDocRef = doc(db, 'roles', uid);
        const userRole = (await getDoc(customDocRef)).data() as UserRole;
-       console.log('xxxxxxxxxxx', userRole?.role)
        setIsAdmin(userRole?.role === 'admin')
     }
 
     useEffect(() => {  
-        const unsubscribe = auth.onAuthStateChanged((authUser) => {
+        const unsubscribe = auth.onAuthStateChanged(async (authUser) => {
             if (authUser) {
+                const token = await authUser.getIdToken();
+                sessionStorage.setItem('AUTH_TOKEN', token);
                 // User is signed in
                 setUser(authUser);
                 if(authUser?.uid) {

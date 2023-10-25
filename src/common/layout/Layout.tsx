@@ -5,10 +5,14 @@ import NavBar from '../nav/Navbar';
 import { getAuth } from 'firebase/auth';
 import { app } from '../../firebase';
 import AuthCheck from '../../hooks/Auth.hook';
+import  { LoaderHook } from '../../context/loaderProvider';
+import { ProgressSpinner } from 'primereact/progressspinner';
 const auth = getAuth(app); 
 
 const Layout: React.FC = () => {
     const [user, setUser] = AuthCheck();
+    const {loader} = LoaderHook();
+    
     const logout = () => {
       auth.signOut()
       .then(() => {
@@ -20,6 +24,8 @@ const Layout: React.FC = () => {
         console.error('Error logging out:', error);
       });
     }
+
+   console.log('loader', loader)
 
     return (
         <>
@@ -91,7 +97,8 @@ const Layout: React.FC = () => {
         </div>
   
         <div className="w-full pt-10 px-4 sm:px-6 md:px-8 lg:pl-72">
-             <Outlet />
+          {loader && <span className='spinner'><ProgressSpinner/></span>}
+          { <Outlet />  }
         </div>
       </>
     )
