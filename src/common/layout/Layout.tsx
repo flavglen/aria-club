@@ -16,6 +16,7 @@ const Layout: React.FC = () => {
     const logout = () => {
       auth.signOut()
       .then(() => {
+        sessionStorage.removeItem('AUTH_TOKEN');
         // User is successfully logged out
         setUser(null);
       })

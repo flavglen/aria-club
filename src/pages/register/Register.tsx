@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
 import { app, collection, db, doc, query, setDoc } from '../../firebase';
@@ -10,6 +10,7 @@ import { ToastHook } from '../../context/toastProvider';
 const auth = getAuth(app); // Use your Firebase App instance here
 
 const Register: React.FC = () => {
+    const [isAdmin] = IsAdmin();
     const { fireToast } = ToastHook();
     const [userName, setUserName] = React.useState("");
     const [password, setPassword] = React.useState("");
@@ -17,13 +18,14 @@ const Register: React.FC = () => {
     const [memberId, setMemberId] = React.useState(0);
     const [name, setName] = React.useState("");
     const [loading, setLoading] = React.useState(false);
-    const [isAdmin] = IsAdmin();
+   
     const navigate = useNavigate();
 
-    if (!isAdmin) {
-        //alert('Only admins can access this page');
-       // navigate('/');
-    }
+    useEffect(() =>{
+        if (isAdmin === false) {
+            navigate('/');
+        }
+    },[isAdmin])
 
     const updateUserName = (e) => {
         setUserName(e?.target?.value)
@@ -73,8 +75,7 @@ const Register: React.FC = () => {
         try {
              await setDoc(customDocRef, {
                 role
-            })
-
+            });
             return true;
         } catch (e) {
             console.error(e)
@@ -83,7 +84,8 @@ const Register: React.FC = () => {
     }
 
     const saveUser = async (data) => {
-        const apiUrl = 'http://127.0.0.1:5001/ariaclubindia/europe-west1/user/addUser';
+        const apiUrl = 'https://europe-west1-ariaclubindia.cloudfunctions.net/user/addUser';
+        //'http://127.0.0.1:5001/ariaclubindia/europe-west1/user/addUser';
         //'https://europe-west1-ariaclubindia.cloudfunctions.net/user/addUser';
         // Create the request headers
         const headers = new Headers();

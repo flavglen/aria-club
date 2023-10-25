@@ -8,7 +8,7 @@
  */
 
 import * as functions from "firebase-functions";
-import {checkIsAdmin, createUser, extractBearer, roleUpdate} from "./utils";
+import {checkIsAdmin, createUser, extractBearer} from "./utils";
 import * as cors from "cors";
 import * as _express from "express";
 import {Request, Response} from "express";
@@ -21,8 +21,9 @@ app.use(cors({origin: true}));
 app.post("/addUser", async (req: Request, res:Response) => {
   const token = extractBearer(req);
   const isAdmin = await checkIsAdmin(token);
-  if(isAdmin === null) {
-    res.status(403).json({success: false, message: "Session Expired , please login again"});
+  if (isAdmin === null) {
+    res.status(403)
+      .json({success: false, message: "Session Expired , please login again"});
     return;
   }
 
@@ -34,12 +35,13 @@ app.post("/addUser", async (req: Request, res:Response) => {
     }
     res.status(200).json(result);
   } else {
-    res.status(403).json({success: false, message: "Only admins can add users"});
+    res.status(403)
+      .json({success: false, message: "Only admins can add users"});
   }
 });
 
 app.get("/changeRole", async (req: Request, res:Response) => {
-    res.status(200).json({success: true});
+  res.status(200).json({success: true});
 });
 
 // export const changeRole = functions.region("europe-west1")
