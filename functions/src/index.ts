@@ -39,17 +39,6 @@ app.post("/addUser", async (req: Request, res:Response) => {
 });
 
 app.get("/changeRole", async (req: Request, res:Response) => {
-
-    const uid = 'hiPxr7m51mPEnZMCbtPlSMMaJaN2'; 
-    const customClaims = {
-        role: 'admin',
-    };
-
-    const result = await roleUpdate(uid, customClaims)
-    if(!result){
-        res.status(400).json({success: true});
-        return;
-    }
     res.status(200).json({success: true});
 });
 
