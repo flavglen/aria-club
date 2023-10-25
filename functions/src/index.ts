@@ -19,8 +19,8 @@ app.use(cors({origin: true}));
 
 
 app.post("/addUser", async (req: Request, res:Response) => {
-  const _token = extractBearer(req);
-  const isAdmin = true; //await checkIsAdmin(token);
+  const token = extractBearer(req);
+  const isAdmin = await checkIsAdmin(token);
   if(isAdmin === null) {
     res.status(403).json({success: false, message: "Session Expired , please login again"});
     return;
