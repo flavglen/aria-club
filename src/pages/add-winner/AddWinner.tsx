@@ -5,7 +5,7 @@ import { Calendar } from 'primereact/calendar';
 import { FileUpload } from 'primereact/fileupload';
 import { Button } from 'primereact/button';
 import { ISelect } from '../add-payment/AddPayment';
-import { collection, db, doc, getDocs, setDoc, updateDoc, imageDB, ref, uploadBytes, serverTimestamp } from '../../firebase';
+import { collection, db, doc, getDocs, setDoc, imageDB, ref, uploadBytes, serverTimestamp } from '../../firebase';
 import { UploadResult  } from "firebase/storage";
 import { ToastHook } from '../../context/toastProvider';
 import { useNavigate } from "react-router-dom";
@@ -17,7 +17,7 @@ export type IWinner = {
     type: { code: number, name: string}
     photo?: object
     active: boolean,
-    timestamp?: any,
+    timestamp?: any , // eslint-disable-line
     imgSrc?: string;
     id?: string;
 } 
@@ -37,12 +37,6 @@ const AddWinner: React.FC = () => {
     const {fireToast} = ToastHook();
     const navigate = useNavigate();
     const [loading, setLoading] = React.useState(false);
-    const [isAdmin] = IsAdmin();
-
-    if(!isAdmin) {
-        alert('Only admins can access this page');
-        navigate('/');
-    }
 
     const onChange = (e, field: string) => {
         const value =  e.target.value;

@@ -2,10 +2,12 @@ import { Button } from 'primereact/button';
 import { Column } from 'primereact/column';
 import { DataTable } from 'primereact/datatable';
 import React, { useEffect } from 'react';
-import { db, collection, getDocs } from '../../firebase';
+import { db, collection, getDocs, query } from '../../firebase';
 import AddPayment, { ISelect, TYPE } from '../add-payment/AddPayment';
 import { Dialog } from 'primereact/dialog';
 import { LoaderHook } from '../../context/loaderProvider';
+import { where } from 'firebase/firestore/lite';
+import IsAdmin from '../../hooks/Admin.hook';
 
 type Payment = {
     user: ISelect;
@@ -21,6 +23,7 @@ const ViewPayment: React.FC = () => {
     const [selectedRow, setSelectedRow] = React.useState<Payment>();
     const [modalVisible, setModalVisible] = React.useState<boolean>(false);
     const {hideSpinner, showSpinner} = LoaderHook();
+    const [isAdmin,user] = IsAdmin();
 
     const getPayment = async () => {
         showSpinner();
@@ -33,9 +36,31 @@ const ViewPayment: React.FC = () => {
        hideSpinner();
     }
 
+    const getUserPayment = async (userId) => {
+        if(!userId) return;
+        showSpinner();
+        const collectionRef = collection(db, 'payment');
+        const q = query(
+            collectionRef,
+            where('userId', '==', userId)
+        );
+
+      try{
+        const data =  await getDocs(q);
+        const result = data.docs.map(x => x.data()) as Payment[]
+        setPayment(result) ;
+        hideSpinner();
+      } catch(e) {
+        return null;
+      }
+    }
+
     useEffect(() => {
+        if(isAdmin)
         getPayment();
-    }, [])
+        else 
+        getUserPayment(user?.currentUser?.uid)
+    }, [isAdmin, user?.currentUser?.uid])
 
     const modeOfPaymentBody = (rowData: Payment) => {
         return (
@@ -71,7 +96,10 @@ const ViewPayment: React.FC = () => {
                 <Column field="amount" header="Amount" body={(row) => `₹ ${row.amount}`}></Column>
                 <Column field="date" header="Date"></Column>
                 <Column field="amount" header="Mode of Payment" body={modeOfPaymentBody}></Column>
+                {isAdmin && (
                 <Column header="Action" body={statusBodyTemplate}></Column> 
+                )}
+
             </DataTable>
             <Dialog visible={modalVisible} style={{ width: '50vw' }} onHide={() => setModalVisible(false)}>
                 <AddPayment type={TYPE.EDIT} paymentDataForEdit={selectedRow} onSave={onSaveMemo} />

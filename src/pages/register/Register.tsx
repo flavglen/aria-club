@@ -1,31 +1,15 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
-import { getAuth, createUserWithEmailAndPassword } from 'firebase/auth';
-import { app, collection, db, doc, query, setDoc } from '../../firebase';
-import { useNavigate } from "react-router-dom";
-import IsAdmin from '../../hooks/Admin.hook';
-import { getDocs, where } from 'firebase/firestore/lite';
+import { db, doc, setDoc } from '../../firebase';
 import { ToastHook } from '../../context/toastProvider';
 
-const auth = getAuth(app); // Use your Firebase App instance here
-
 const Register: React.FC = () => {
-    const [isAdmin] = IsAdmin();
     const { fireToast } = ToastHook();
     const [userName, setUserName] = React.useState("");
     const [password, setPassword] = React.useState("");
     const [place, setPlace] = React.useState("");
     const [memberId, setMemberId] = React.useState(0);
     const [name, setName] = React.useState("");
-    const [loading, setLoading] = React.useState(false);
-   
-    const navigate = useNavigate();
-
-    useEffect(() =>{
-        if (isAdmin === false) {
-            navigate('/');
-        }
-    },[isAdmin])
 
     const updateUserName = (e) => {
         setUserName(e?.target?.value)
@@ -50,7 +34,6 @@ const Register: React.FC = () => {
     const setUser = async ({ email, uid, userNameToPhone }) => {
         // Define the collection reference
         const customDocRef = doc(db, 'users', uid);
-
         // Add a document to the collection with the custom ID
         try {
              await setDoc(customDocRef, {
@@ -115,7 +98,6 @@ const Register: React.FC = () => {
                 fireToast({ severity: 'error', summary: 'Failed', detail: 'Enter a Valid Phone Number', life: 3000 })
                 return;
             }
-            setLoading(true);
             const formattedMemberId = `${memberId.toString()}@gmail.com`;
             const stream = await saveUser({ email: formattedMemberId, password, phoneNumber: userNameToPhone })
             const result = await stream?.json();
@@ -133,38 +115,19 @@ const Register: React.FC = () => {
 
                 if(!userResult) {
                     fireToast({ severity: 'error', summary: 'Error', detail: 'failed to add user', life: 3000 })
-                    setLoading(false);
                     return;
                 }
 
                 const roleResult = await setUserRole({uid}, 'user');
                 if(!roleResult) {
-                    setLoading(false);
                     fireToast({ severity: 'error', summary: 'Error', detail: 'failed to add user role', life: 3000 })
                     return;
                 }
 
                 fireToast({ severity: 'success', summary: 'Success', detail: 'user has been added', life: 3000 })
-                setLoading(false);
             } else {
                 fireToast({ severity: 'error', summary: 'Error', detail: 'something went wrong', life: 3000 })  
-                setLoading(false);
             }
-            //const userResult = await setUser({email, uid, name, userNameToPhone});
-           // const roleResult = await setUserRole({uid}, 'user');
-
-            /* createUserWithEmailAndPassword(auth, formattedMemberId, password)
-             .then(async (userCredential) => {
-                 const {user: {email, uid}} = userCredential;
-                 //TODO check status of below updates
-                 await setUser({email, uid, name, userNameToPhone});
-                 await setUserRole({uid}, 'user');
-                 setLoading(false)
-             })
-             .catch((error) => {
-                 console.log(error);
-                 setLoading(false);
-             });*/
         } else {
             fireToast({ severity: 'error', summary: 'Failed', detail: 'Please Enter All details', life: 3000 })
         }

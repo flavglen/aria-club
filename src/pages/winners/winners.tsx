@@ -1,4 +1,4 @@
-import React, {useEffect,useRef} from 'react';
+import React, {useEffect} from 'react';
 import { collection, db, getDocs, limit, orderBy, query, ref, imageDB, updateDoc, doc } from '../../firebase';
 import { getDownloadURL } from '@firebase/storage';
 import { IWinner } from '../add-winner/AddWinner';
@@ -6,10 +6,10 @@ import { SelectButton } from 'primereact/selectbutton';
 import IsAdmin from '../../hooks/Admin.hook';
 import { LoaderHook } from '../../context/loaderProvider';
 
-type winnerStatus = {
-  first: string;
-  second: string;
-}
+// type winnerStatus = {
+//   first: string;
+//   second: string;
+// }
 
 const Winners: React.FC = () => {
     const [winnerOne, setWinnerOne] = React.useState<IWinner | undefined>();
@@ -26,7 +26,7 @@ const Winners: React.FC = () => {
       return await getDownloadURL(storageRef);
     }
 
-    const updateWinnerStatusOne = (e, id) => {
+    const updateWinnerStatusOne = (e) => {
       const value = e.target.value;
       const winnerOneCopy = {...winnerOne as IWinner};
       setWinnerOne({...winnerOneCopy, active: value === 'On'? true : false});
@@ -34,7 +34,7 @@ const Winners: React.FC = () => {
         updateActiveWinnerStatus(winnerOne?.id, {active: value === 'On'? true : false});
     }
 
-    const updateWinnerStatusTwo = (e, id) => {
+    const updateWinnerStatusTwo = (e) => {
       const value = e.target.value;
       const winnerTwoCopy = {...winnerTwo as IWinner};
       setWinnerTwo({...winnerTwoCopy, active: value === 'On'? true : false});

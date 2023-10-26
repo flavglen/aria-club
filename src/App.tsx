@@ -1,6 +1,7 @@
 import React from 'react';
 import {
   createBrowserRouter,
+  Navigate,
   RouterProvider
 } from "react-router-dom";
 import Layout from './common/layout/Layout';
@@ -13,51 +14,72 @@ import Login from './pages/login/Login';
 import AddPayment from './pages/add-payment/AddPayment';
 import Prizes from './pages/prizes/Prizes';
 import AddWinner from './pages/add-winner/AddWinner';
-import UserProvider from './context/userProvider';
 import LoaderProvider from './context/loaderProvider';
-
-const router = createBrowserRouter([
-  {
-    element: <Layout/ >,
-    children: [
-      {
-        path: "/",
-        element: <Prize />
-      },
-      {
-        path: "users",
-        element: <Users />
-      },
-      {
-        path: "view-payment",
-        element: <ViewPayment />
-      },
-      {
-        path: "add-payment",
-        element: <AddPayment  />
-      },
-      {
-        path: "register",
-        element: <Register />
-      },
-      {
-        path: "login",
-        element: <Login />
-      },
-      {
-        path: "prizes",
-        element: <Prizes />
-      },
-      {
-        path: "add-winner",
-        element: <AddWinner />
-      }
-    ],
-  },
-]);
-
+import IsAdmin from './hooks/Admin.hook';
 
 const App: React.FC = () => {
+  const [isAdmin, , user] = IsAdmin();
+
+  const guestRoute = [
+    {
+      path: "/",
+      element: <Prize />
+    },
+    {
+      path: "prizes",
+      element: <Prizes />
+    },
+    {
+      path: "login",
+      element: <Login />
+    },
+    {
+      path: "*",
+      element: <Navigate replace to="/" />
+    }
+  ]
+
+  const  userRoute = [
+    {
+      path: "view-payment",
+      element: <ViewPayment />
+    }
+  ]
+
+  const adminRoutes = [
+    {
+      path: "users",
+      element: <Users />
+    },
+    {
+      path: "add-payment",
+      element: <AddPayment />
+    },
+    {
+      path: "register",
+      element: <Register />
+    },
+    {
+      path: "add-winner",
+      element: <AddWinner />
+    }]
+
+  const getRoutes = () => {
+    console.log(user, isAdmin)
+    if(user && isAdmin) return [...guestRoute, ...userRoute, ...adminRoutes];
+    if(user && !isAdmin) return [...guestRoute, ...userRoute]
+
+    return guestRoute;
+  }
+
+  const router = React.useMemo(() => createBrowserRouter([
+    {
+      element: <Layout />,
+      children: getRoutes()
+    },
+  ]),[isAdmin, user]);
+
+
   return (
     <LoaderProvider>
       <RouterProvider router={router} />

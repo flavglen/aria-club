@@ -4,14 +4,14 @@ import { getAuth, User } from 'firebase/auth';
 import { db, doc, getDoc, app } from '../firebase';
 const auth = getAuth(app);
 
-export const UserContext = React.createContext<{isAdmin: boolean, auth: any, setIsAdmin: React.Dispatch<React.SetStateAction<boolean>>} | undefined>(undefined);
+export const UserContext = React.createContext<{isAdmin: boolean, user:any,  auth: any, setIsAdmin: React.Dispatch<React.SetStateAction<boolean>>} | undefined>(undefined);
 
 type UserRole = {
     role: string;
 }
 
 const UserProvider = ({children}) => {
-    const [_, setUser] = useState<User | null>(null);
+    const [user, setUser] = useState<User | null>(null);
     const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
     const fetchRole = async (uid: string) => {
@@ -25,6 +25,7 @@ const UserProvider = ({children}) => {
             if (authUser) {
                 const token = await authUser.getIdToken();
                 sessionStorage.setItem('AUTH_TOKEN', token);
+                console.log('AUTh', authUser)
                 // User is signed in
                 setUser(authUser);
                 if(authUser?.uid) {
@@ -42,7 +43,7 @@ const UserProvider = ({children}) => {
     }, []);
 
     return (
-        <UserContext.Provider value={{isAdmin,auth, setIsAdmin}}>
+        <UserContext.Provider value={{isAdmin,auth, setIsAdmin, user}}>
             {children}
         </UserContext.Provider>
     )

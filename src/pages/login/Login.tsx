@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 import { app } from '../../firebase';
 import { useNavigate } from "react-router-dom";
 import { ToastHook } from '../../context/toastProvider';
+import IsAdmin from '../../hooks/Admin.hook';
 
 const auth = getAuth(app); 
 
@@ -12,6 +13,7 @@ const Login: React.FC = () => {
     const [loading, setLoading] =  React.useState(false);
     const { fireToast } = ToastHook();
     const navigate = useNavigate();
+    const [,,user] = IsAdmin();
 
     const updateUserName = (e) => {
         setUserName(e?.target?.value)
@@ -20,6 +22,12 @@ const Login: React.FC = () => {
     const updatePassword = (e) => {
         setPassword(e?.target?.value)
     }
+
+    useEffect(() => {
+        if(user) {
+            navigate("/");
+        }
+    }, [user])
 
     const login = () => {
         const memberId = parseInt(userName);

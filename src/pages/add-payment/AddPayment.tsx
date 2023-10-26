@@ -6,9 +6,7 @@ import { InputText } from 'primereact/inputtext';
 import { Dropdown } from 'primereact/dropdown';
 import { Calendar } from 'primereact/calendar';
 import { collection, db, doc, getDocs, setDoc, updateDoc } from '../../firebase';
-import AuthCheck from '../../hooks/Auth.hook';
 import { Toast } from 'primereact/toast';
-import IsAdmin from '../../hooks/Admin.hook';
 
 export enum TYPE  {
     ADD = 'Add',
@@ -39,17 +37,11 @@ type IAddPayment = {
 }
 
 const AddPayment: React.FC<IAddPayment> = ({type =  TYPE.ADD , paymentDataForEdit, onSave}) => {
-    const [isAdmin] = IsAdmin();
     const navigate = useNavigate();
     const [users, setUsers] = React.useState<ISelect[]>([]);
     const [isLoading, setIsLoading] = React.useState<boolean>(false);
     const toast = useRef<Toast>(null);
 
-    if(!IsAdmin) {
-        alert('Only admins can access this page');
-        navigate('/');
-    }
-    
     const initPaymentData = () => {
         if(!paymentDataForEdit) {
                 return {
@@ -119,6 +111,7 @@ const AddPayment: React.FC<IAddPayment> = ({type =  TYPE.ADD , paymentDataForEdi
             setIsLoading(false);
             onSave && onSave(false);
             toast.current?.show({severity:'error', summary: 'Error', detail:'Failed to save data, please try again', life: 3000})
+            console.error(error);
        });
     }
 
