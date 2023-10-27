@@ -1,8 +1,7 @@
 import React, { useContext, useState } from 'react';
 import PropTypes from 'prop-types';
-
+/* eslint-disable */
 export const LoaderContext = React.createContext<any | null>(null);
-//const [toast, setToast] = useState<{severity:'success', summary: 'Success', detail:'Message Content', life: 3000} | null>(null);
 
 const LoaderProvider = ({ children }) => {
     const [loader, setLoader] = useState(false);

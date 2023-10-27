@@ -9,7 +9,6 @@ import { collection, db, doc, getDocs, setDoc, imageDB, ref, uploadBytes, server
 import { UploadResult  } from "firebase/storage";
 import { ToastHook } from '../../context/toastProvider';
 import { useNavigate } from "react-router-dom";
-import IsAdmin from '../../hooks/Admin.hook';
 
 export type IWinner = {
     user: {code: string, name: string, userId: string},

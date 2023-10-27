@@ -137,7 +137,7 @@ const AddPayment: React.FC<IAddPayment> = ({type =  TYPE.ADD , paymentDataForEdi
         )
     }
 
-    const selectedItemTemplate = (option, props) => {
+    const selectedItemTemplate = (option) => {
         if(!option) return "Select an Option";
         return(
             <div className="custom-dropdown-item">

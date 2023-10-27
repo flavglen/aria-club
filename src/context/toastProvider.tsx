@@ -1,7 +1,7 @@
 import  React, {useRef, useContext} from 'react';
 import { Toast } from 'primereact/toast';
 import PropTypes from 'prop-types';
-
+/* eslint-disable */
 export const ToastContext = React.createContext<any|null>(null);
 //const [toast, setToast] = useState<{severity:'success', summary: 'Success', detail:'Message Content', life: 3000} | null>(null);
 

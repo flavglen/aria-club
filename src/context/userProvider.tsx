@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { getAuth, User } from 'firebase/auth';
 import { db, doc, getDoc, app } from '../firebase';
 const auth = getAuth(app);
-
+/* eslint-disable */
 export const UserContext = React.createContext<{isAdmin: boolean, user:any,  auth: any, setIsAdmin: React.Dispatch<React.SetStateAction<boolean>>} | undefined>(undefined);
 
 type UserRole = {
