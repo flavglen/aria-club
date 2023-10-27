@@ -1,7 +1,8 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { db, doc, setDoc } from '../../firebase';
 import { ToastHook } from '../../context/toastProvider';
+import { LoaderHook } from '../../context/loaderProvider';
 
 const Register: React.FC = () => {
     const { fireToast } = ToastHook();
@@ -10,6 +11,8 @@ const Register: React.FC = () => {
     const [place, setPlace] = React.useState("");
     const [memberId, setMemberId] = React.useState(0);
     const [name, setName] = React.useState("");
+    const navigate = useNavigate();
+    const {hideSpinner, showSpinner, loader} = LoaderHook();
 
     const updateUserName = (e) => {
         setUserName(e?.target?.value)
@@ -98,6 +101,7 @@ const Register: React.FC = () => {
                 fireToast({ severity: 'error', summary: 'Failed', detail: 'Enter a Valid Phone Number', life: 3000 })
                 return;
             }
+            showSpinner();
             const formattedMemberId = `${memberId.toString()}@gmail.com`;
             const stream = await saveUser({ email: formattedMemberId, password, phoneNumber: userNameToPhone })
             const result = await stream?.json();
@@ -106,6 +110,7 @@ const Register: React.FC = () => {
                 const messageFormatted = result.message ? result.message.replace('email address', 'Member Id') : 'something went wrong';
                 const codeFormatted = result.code ? result.code.replace('email', 'Member Id') : 'Error';
                 fireToast({ severity: 'error', summary: codeFormatted, detail: messageFormatted, life: 3000 })
+                hideSpinner();
                 return false
             }
 
@@ -115,17 +120,22 @@ const Register: React.FC = () => {
 
                 if(!userResult) {
                     fireToast({ severity: 'error', summary: 'Error', detail: 'failed to add user', life: 3000 })
+                    hideSpinner();
                     return;
                 }
 
                 const roleResult = await setUserRole({uid}, 'user');
                 if(!roleResult) {
                     fireToast({ severity: 'error', summary: 'Error', detail: 'failed to add user role', life: 3000 })
+                    hideSpinner();
                     return;
                 }
-
+                // Success Save successful
                 fireToast({ severity: 'success', summary: 'Success', detail: 'user has been added', life: 3000 })
+                navigate('/users');
+                hideSpinner();
             } else {
+                hideSpinner();
                 fireToast({ severity: 'error', summary: 'Error', detail: 'something went wrong', life: 3000 })  
             }
         } else {
@@ -207,7 +217,7 @@ const Register: React.FC = () => {
                                     </div>
                                     <p className="hidden text-xs text-red-600 mt-2" id="password-error">8+ characters required</p>
                                 </div>
-                                <button type="button" onClick={register} className="py-3 px-4 inline-flex justify-center items-center gap-2 rounded-md border border-transparent font-semibold bg-blue-500 text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all text-sm dark:focus:ring-offset-gray-800">Sign up</button>
+                                <button type="button" disabled={loader} onClick={register} className="py-3 px-4 inline-flex justify-center items-center gap-2 rounded-md border border-transparent font-semibold bg-blue-500 text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all text-sm dark:focus:ring-offset-gray-800">Sign up</button>
                             </div>
                         </form>
                     </div>

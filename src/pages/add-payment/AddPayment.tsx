@@ -7,6 +7,8 @@ import { Dropdown } from 'primereact/dropdown';
 import { Calendar } from 'primereact/calendar';
 import { collection, db, doc, getDocs, setDoc, updateDoc } from '../../firebase';
 import { Toast } from 'primereact/toast';
+import { LoaderHook } from '../../context/loaderProvider';
+import { ToastHook } from '../../context/toastProvider';
 
 export enum TYPE  {
     ADD = 'Add',
@@ -22,6 +24,7 @@ export type ISelect = {
 
 type PaymentData = {
     user: ISelect;
+    careOf: ISelect;
     amount: number;
     mode: ISelect;
     date: string;
@@ -39,13 +42,15 @@ type IAddPayment = {
 const AddPayment: React.FC<IAddPayment> = ({type =  TYPE.ADD , paymentDataForEdit, onSave}) => {
     const navigate = useNavigate();
     const [users, setUsers] = React.useState<ISelect[]>([]);
-    const [isLoading, setIsLoading] = React.useState<boolean>(false);
     const toast = useRef<Toast>(null);
+    const {hideSpinner, showSpinner, loader} = LoaderHook();
+    const { fireToast } = ToastHook();
 
     const initPaymentData = () => {
         if(!paymentDataForEdit) {
                 return {
                 user: { name: '', code: '', userId: '', username: ''},
+                careOf: { name: '', code: '', userId: '', username: ''},
                 amount: 0,
                 mode: { name: '', code: ''},
                 date: '',
@@ -76,13 +81,14 @@ const AddPayment: React.FC<IAddPayment> = ({type =  TYPE.ADD , paymentDataForEdi
     ]
 
     const getUsers = async () => {
+        showSpinner();
         const customDocRef = collection(db, 'users');
         const usersRef = await getDocs(customDocRef);
         const users = usersRef.docs.map(x => {
             const data = x.data();
             return { name: data.memberId, code: data.memberId, userId: x.id, username: data.name }
-        }) as ISelect[]
-        console.log('USER', users);
+        }) as ISelect[];
+        hideSpinner();
         setUsers(users);
     }
 
@@ -97,20 +103,19 @@ const AddPayment: React.FC<IAddPayment> = ({type =  TYPE.ADD , paymentDataForEdi
 
        paymentPayload.userId = paymentPayload.user.userId;
        const customDocRef = doc(db, 'payment', type ===  TYPE.ADD ? new Date().getTime().toString() : paymentPayload.id || '');
-       console.log(type, paymentPayload )
        const updateOrAdd = type === TYPE.ADD ? setDoc : updateDoc;
-       setIsLoading(true);
+       showSpinner();
        updateOrAdd(customDocRef, paymentPayload)
        .then(() => {
-            toast.current?.show({severity:'success', summary: 'Success', detail:'Payment has been saved', life: 3000});
+            fireToast({severity:'success', summary: 'Success', detail:'Payment has been saved', life: 3000});
             onSave && onSave(true);
-            setIsLoading(false);
+            hideSpinner();
             navigate('/view-payment');
        })
        .catch((error) => {
-            setIsLoading(false);
+            hideSpinner();
             onSave && onSave(false);
-            toast.current?.show({severity:'error', summary: 'Error', detail:'Failed to save data, please try again', life: 3000})
+            fireToast({severity:'error', summary: 'Error', detail:'Failed to save data, please try again', life: 3000})
             console.error(error);
        });
     }
@@ -123,6 +128,24 @@ const AddPayment: React.FC<IAddPayment> = ({type =  TYPE.ADD , paymentDataForEdi
         }))
     }
 
+    const itemTemplate = (option) => {
+        if(!option) return "Select an Option";
+        return(
+            <div className="custom-dropdown-item">
+                <span className="custom-dropdown-label">{option?.name} ({option?.username})</span>
+          </div>
+        )
+    }
+
+    const selectedItemTemplate = (option, props) => {
+        if(!option) return "Select an Option";
+        return(
+            <div className="custom-dropdown-item">
+                <span className="custom-dropdown-label">{option?.name} ({option?.username})</span>
+          </div>
+        )
+    }
+
     useEffect(() => {
         getUsers();
     }, [])
@@ -132,8 +155,14 @@ const AddPayment: React.FC<IAddPayment> = ({type =  TYPE.ADD , paymentDataForEdi
             <form>
                 <div className="flex flex-column gap-2 flex-col">
                     <label htmlFor="customer">Member Id:</label>
-                    <Dropdown options={users} value={paymentData.user} disabled={type ===  TYPE.EDIT} onChange={(e) => onChange(e, 'user')} optionLabel="name"
+                    <Dropdown valueTemplate={selectedItemTemplate}  itemTemplate={itemTemplate} options={users} value={paymentData.user} disabled={type ===  TYPE.EDIT} onChange={(e) => onChange(e, 'user')} optionLabel="name"
                         placeholder="Select a Member Id" className="w-full md:w-14rem"/>
+                </div>
+
+                <div className="flex flex-column gap-2 flex-col">
+                    <label htmlFor="customer">Care of:</label>
+                    <Dropdown  valueTemplate={selectedItemTemplate}  itemTemplate={itemTemplate} options={users} value={paymentData.careOf} disabled={type ===  TYPE.EDIT} onChange={(e) => onChange(e, 'careOf')} optionLabel="name"
+                        placeholder="Select Care of" className="w-full md:w-14rem"/>
                 </div>
 
                 <div className="flex flex-column gap-2 flex-col">
@@ -153,7 +182,7 @@ const AddPayment: React.FC<IAddPayment> = ({type =  TYPE.ADD , paymentDataForEdi
                 </div>
 
                 <div className="mt-10" style={{ width: 50 }}>
-                    <Button disabled={!users.length || isLoading} onClick={saveData}>Save</Button>
+                    <Button disabled={!users.length || loader} onClick={saveData}>Save</Button>
                 </div>
             </form>
             <Toast ref={toast} />

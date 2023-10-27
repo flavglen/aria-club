@@ -11,6 +11,7 @@ import IsAdmin from '../../hooks/Admin.hook';
 
 type Payment = {
     user: ISelect;
+    careOf: ISelect
     date: string;
     amount: number
     mode: ISelect,
@@ -93,6 +94,7 @@ const ViewPayment: React.FC = () => {
             <DataTable paginator rows={5} rowsPerPageOptions={[5, 10, 15, 20]} value={payment} tableStyle={{ minWidth: '50rem' }}>
                 <Column field="user.name" header="Member Id"></Column>
                 <Column field="user.username" header="Member Name"></Column>
+                <Column field="careOf.username" header="Care of" body={(row) => <span> {row.careOf.code} ({row.careOf.username})</span> }></Column>
                 <Column field="amount" header="Amount" body={(row) => `₹ ${row.amount}`}></Column>
                 <Column field="date" header="Date"></Column>
                 <Column field="amount" header="Mode of Payment" body={modeOfPaymentBody}></Column>
