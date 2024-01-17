@@ -1,8 +1,16 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { db, doc, setDoc } from '../../firebase';
+import { collection, db, doc, getDocs, setDoc } from '../../firebase';
 import { ToastHook } from '../../context/toastProvider';
 import { LoaderHook } from '../../context/loaderProvider';
+import { Dropdown } from 'primereact/dropdown';
+
+export type ISelect = {
+    code: string;
+    name: string
+    userId?: string;
+    username?: string
+}
 
 const Register: React.FC = () => {
     const { fireToast } = ToastHook();
@@ -13,6 +21,8 @@ const Register: React.FC = () => {
     const [name, setName] = React.useState("");
     const navigate = useNavigate();
     const {hideSpinner, showSpinner, loader} = LoaderHook();
+    const [users, setUsers] = React.useState<ISelect[]>([]);
+    const [careOf, setCareOf] = React.useState(null);
 
     const updateUserName = (e) => {
         setUserName(e?.target?.value)
@@ -34,6 +44,10 @@ const Register: React.FC = () => {
         setPlace(e?.target?.value)
     }
 
+    const updateCareOf = (e) => {
+        setCareOf(e?.target?.value)
+    }
+
     const setUser = async ({ email, uid, userNameToPhone }) => {
         // Define the collection reference
         const customDocRef = doc(db, 'users', uid);
@@ -44,7 +58,8 @@ const Register: React.FC = () => {
                 name,
                 memberId,
                 place,
-                phone: userNameToPhone
+                phone: userNameToPhone,
+                careOf: careOf
             })
             return true;
         } catch (e) {
@@ -143,6 +158,31 @@ const Register: React.FC = () => {
         }
     }
 
+    const itemTemplate = (option) => {
+        if(!option) return "Select an Option";
+        return(
+            <div className="custom-dropdown-item">
+                <span className="custom-dropdown-label">{option?.name} ({option?.username})</span>
+          </div>
+        )
+    }
+
+    const getUsers = async () => {
+        showSpinner();
+        const customDocRef = collection(db, 'users');
+        const usersRef = await getDocs(customDocRef);
+        const users = usersRef.docs.map(x => {
+            const data = x.data();
+            return { name: data.memberId, code: data.memberId, userId: x.id, username: data.name }
+        }) as ISelect[];
+        hideSpinner();
+        setUsers(users);
+    }
+
+    useEffect(() => {
+        getUsers();
+    }, [])
+
     return (
         <main className="w-full max-w-md mx-auto p-6">
             <div className="mt-7 bg-white border border-gray-200 rounded-xl shadow-sm dark:bg-gray-800 dark:border-gray-700">
@@ -180,6 +220,16 @@ const Register: React.FC = () => {
                                                 <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4zm.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2z" />
                                             </svg>
                                         </div>
+                                    </div>
+                                    <p className="hidden text-xs text-red-600 mt-2" id="password-error">8+ characters required</p>
+                                </div>
+                                <div>
+                                    <label htmlFor="name" className="block text-sm mb-2 dark:text-white">Care Of</label>
+                                    <div className="relative border rounded">
+                                        <Dropdown itemTemplate={itemTemplate}
+                                        options={users}
+                                        onChange={updateCareOf} optionLabel="name"
+                                        placeholder="Select Care of" className="w-full md:w-14rem"/>
                                     </div>
                                     <p className="hidden text-xs text-red-600 mt-2" id="password-error">8+ characters required</p>
                                 </div>

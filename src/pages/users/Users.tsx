@@ -14,24 +14,26 @@ const Users: React.FC = () => {
     const [users, setUsers] = React.useState<IUser[]>([]);
     const {hideSpinner, showSpinner} = LoaderHook();
 
-    const getPayment = async () => {
+    const getUsers = async () => {
         showSpinner();
         const customDocRef = collection(db, 'users');
-        const paymentRef = await getDocs(customDocRef);
-        const payment = paymentRef.docs.map(x => {
+        const usersRef = await getDocs(customDocRef);
+        const users = usersRef.docs.map(x => {
             return {...x.data()}
-        }) as IUser[]
-        setUsers(payment);
+        }) as any[];
+        console.log(users);
+        setUsers(users);
         hideSpinner();
     }
 
     useEffect(() => {
-        getPayment();
+        getUsers();
     }, [])
 
     return (
         <DataTable  value={users} tableStyle={{ minWidth: '50rem' }}>
             <Column field="name" header="Name"></Column>
+            <Column field="careOf.username" header="Care of" body={(row) => row.careOf && <span> {row.careOf.code} ({row.careOf.username})</span> }></Column>
             <Column field="memberId" header="Member Id"></Column>
             <Column field="phone" header="Phone"></Column>
             <Column field="email" header="Email"></Column>
