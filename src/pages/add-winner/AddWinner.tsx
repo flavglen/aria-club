@@ -11,7 +11,7 @@ import { ToastHook } from '../../context/toastProvider';
 import { useNavigate } from "react-router-dom";
 
 export type IWinner = {
-    user: {code: string, name: string, userId: string},
+    user: {code: string, name: string, userId: string, username?:string},
     date: string,
     type: { code: number, name: string}
     photo?: object
@@ -50,7 +50,7 @@ const AddWinner: React.FC = () => {
         const usersRef = await getDocs(customDocRef);
         const users = usersRef.docs.map(x => {
             const data = x.data();
-            return { name: data.name, code: data.name, userId: x.id }
+            return { name: data.memberId, code: data.memberId, userId: x.id, username: data.name }
         }) as ISelect[]
         setUsers(users);
     }
@@ -123,6 +123,15 @@ const AddWinner: React.FC = () => {
         }
     }
 
+    const itemTemplate = (option) => {
+        if(!option) return "Select an Option";
+        return(
+            <div className="custom-dropdown-item">
+                <span className="custom-dropdown-label">{option?.name} ({option?.username})</span>
+          </div>
+        )
+    }
+
     return (
         <Card>
              <div className="flex flex-column gap-2 flex-col">
@@ -137,8 +146,9 @@ const AddWinner: React.FC = () => {
 
             <div className="flex flex-column gap-2 flex-col">
                 <label htmlFor="customer">Winner:</label>
-                <Dropdown options={users} value={winner.user}  onChange={(e) => onChange(e, 'user')} optionLabel="name"
+                <Dropdown itemTemplate={itemTemplate} filter options={users} value={winner.user}  onChange={(e) => onChange(e, 'user')} optionLabel="name"
                     placeholder="Select a winner" className="w-full md:w-14rem"/>
+
             </div>
 
             <div className="flex flex-column gap-2 flex-col">

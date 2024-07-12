@@ -56,6 +56,8 @@ const Winners: React.FC = () => {
         winnerData.push(latestRecord);
       });
 
+      console.log(winnerData)
+
       await Promise.all(promises);
       const winnerDataCopy = isAdmin ? winnerData : winnerData.filter((d) => d.active );
       const firstPrize =  winnerDataCopy?.find((winner:IWinner) => winner.type.code === 1);
@@ -99,7 +101,7 @@ const Winners: React.FC = () => {
                 </div>
               <div className="mt-2 sm:mt-4">
                 <h3 className="text-sm font-medium text-gray-800 sm:text-base lg:text-lg dark:text-gray-200 pb-5">
-                    {winnerOne?.user.name}
+                    {winnerOne?.user.name} ({winnerOne?.user?.username})
                 </h3>
                 {isAdmin && <div>
                  <SelectButton value={winnerOne?.active ? 'On': 'Off'} options={['Off', 'On']} onChange={(e) => updateWinnerStatusOne(e,  winnerOne?.id)} />
@@ -113,7 +115,7 @@ const Winners: React.FC = () => {
               </div>
               <div className="mt-2 sm:mt-4">
                 <h3 className="text-sm font-medium text-gray-800 sm:text-base lg:text-lg dark:text-gray-200 pb-5">
-                 {winnerTwo?.user.name}
+                 {winnerTwo?.user.name} ({winnerOne?.user?.username})
                 </h3>
                 {isAdmin && <div>
                  <SelectButton  value={winnerTwo?.active ? 'On': 'Off'} options={['Off', 'On']} onChange={(e) => updateWinnerStatusTwo(e,  winnerTwo?.id)}/>

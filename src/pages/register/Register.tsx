@@ -228,6 +228,7 @@ const Register: React.FC = () => {
                                     <div className="relative border rounded">
                                         <Dropdown itemTemplate={itemTemplate}
                                         options={users}
+                                        filter
                                         onChange={updateCareOf} optionLabel="name"
                                         placeholder="Select Care of" className="w-full md:w-14rem"/>
                                     </div>

@@ -1,6 +1,6 @@
 import { Button } from 'primereact/button';
 import { Card } from 'primereact/card';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import { InputText } from 'primereact/inputtext';
 import { Dropdown } from 'primereact/dropdown';
@@ -9,6 +9,8 @@ import { collection, db, doc, getDocs, setDoc, updateDoc } from '../../firebase'
 import { Toast } from 'primereact/toast';
 import { LoaderHook } from '../../context/loaderProvider';
 import { ToastHook } from '../../context/toastProvider';
+import { AddBulkPayment } from '../bulk-add-payment/bulk-add-payment';
+import { SelectButton } from 'primereact/selectbutton';
 
 export enum TYPE  {
     ADD = 'Add',
@@ -27,7 +29,7 @@ type PaymentData = {
     careOf: ISelect;
     amount: number;
     mode: ISelect;
-    date: string;
+    date: string | Date;
     userId: string | undefined;
     id?: string;
 }
@@ -42,6 +44,8 @@ type IAddPayment = {
 const AddPayment: React.FC<IAddPayment> = ({type =  TYPE.ADD , paymentDataForEdit, onSave}) => {
     const navigate = useNavigate();
     const [users, setUsers] = React.useState<ISelect[]>([]);
+    const options = ['off', 'on'];
+    const [value, setValue] = useState(options[0]);
     const toast = useRef<Toast>(null);
     const {hideSpinner, showSpinner, loader} = LoaderHook();
     const { fireToast } = ToastHook();
@@ -152,39 +156,53 @@ const AddPayment: React.FC<IAddPayment> = ({type =  TYPE.ADD , paymentDataForEdi
 
     return (
         <Card title={`${type} Payment`}>
+            
+            <div className="flex flex-column gap-2 flex-col">
+                <label htmlFor="customer">Import Payment from Excel:</label>
+                <SelectButton  value={value} onChange={(e) => setValue(e.value)} options={options} />
+            </div>
+           
             <form>
-                <div className="flex flex-column gap-2 flex-col">
-                    <label htmlFor="customer">Member Id:</label>
-                    <Dropdown valueTemplate={selectedItemTemplate}  itemTemplate={itemTemplate} options={users} value={paymentData.user} disabled={type ===  TYPE.EDIT} onChange={(e) => onChange(e, 'user')} optionLabel="name"
-                        placeholder="Select a Member Id" className="w-full md:w-14rem"/>
-                </div>
+               {value === 'off' ? ( <>
+                    <div className="flex flex-column gap-2 flex-col">
+                        <label htmlFor="customer">Member Id:</label>
+                        <Dropdown valueTemplate={selectedItemTemplate}  itemTemplate={itemTemplate} options={users} value={paymentData.user} disabled={type ===  TYPE.EDIT} onChange={(e) => onChange(e, 'user')} optionLabel="name"
+                            placeholder="Select a Member Id" className="w-full md:w-14rem"/>
+                    </div>
 
-                <div className="flex flex-column gap-2 flex-col">
-                    <label htmlFor="customer">Care of:</label>
-                    <Dropdown  valueTemplate={selectedItemTemplate}  itemTemplate={itemTemplate} options={users} value={paymentData.careOf} disabled={type ===  TYPE.EDIT} onChange={(e) => onChange(e, 'careOf')} optionLabel="name"
-                        placeholder="Select Care of" className="w-full md:w-14rem"/>
-                </div>
+                    <div className="flex flex-column gap-2 flex-col">
+                        <label htmlFor="customer">Care of:</label>
+                        <Dropdown  valueTemplate={selectedItemTemplate} filter  itemTemplate={itemTemplate} options={users} value={paymentData.careOf} disabled={type ===  TYPE.EDIT} onChange={(e) => onChange(e, 'careOf')} optionLabel="name"
+                            placeholder="Select Care of" className="w-full md:w-14rem"/>
+                    </div>
 
-                <div className="flex flex-column gap-2 flex-col">
-                    <label htmlFor="amount">Amount:</label>
-                    <InputText id="amount" value={paymentData.amount.toString()} onChange={(e) => onChange(e, 'amount')} aria-describedby="amount-help" type='number' />
-                </div>
+                    <div className="flex flex-column gap-2 flex-col">
+                        <label htmlFor="amount">Amount:</label>
+                        <InputText id="amount" value={paymentData.amount.toString()} onChange={(e) => onChange(e, 'amount')} aria-describedby="amount-help" type='number' />
+                    </div>
 
-                <div className="flex flex-column gap-2 flex-col">
-                    <label htmlFor="amount">Date:</label>
-                    <Calendar dateFormat="dd-mm-yy" value={type ===  TYPE.ADD ? paymentData.date : new Date(paymentData.date)} showIcon onChange={(e) => onChange(e, 'date')} />
-                </div>
+                    <div className="flex flex-column gap-2 flex-col">
+                        <label htmlFor="amount">Date:</label>
+                        <Calendar dateFormat="dd-mm-yy" value={type ===  TYPE.ADD ? paymentData.date : new Date(paymentData.date)} showIcon onChange={(e) => onChange(e, 'date')} />
+                    </div>
 
-                <div className="flex flex-column gap-2 flex-col">
-                    <label htmlFor="customer">Mode of Payment:</label>
-                    <Dropdown value={paymentData.mode} options={modeOfPayment} optionLabel="name" onChange={(e) => onChange(e, 'mode')}
-                        placeholder="Select a Mode of payment" className="w-full md:w-14rem" />
-                </div>
-
-                <div className="mt-10" style={{ width: 50 }}>
+                    <div className="flex flex-column gap-2 flex-col">
+                        <label htmlFor="customer">Mode of Payment:</label>
+                        <Dropdown value={paymentData.mode} options={modeOfPayment} optionLabel="name" onChange={(e) => onChange(e, 'mode')}
+                            placeholder="Select a Mode of payment" className="w-full md:w-14rem" />
+                    </div>
+                    </>
+                 ):
+                 <div className="flex flex-column gap-2 flex-col">
+                    <AddBulkPayment  />
+                 </div>
+                 }
+            
+                { value === 'off' && <div className="mt-10" style={{ width: 50 }}>
                     <Button disabled={!users.length || loader} onClick={saveData}>Save</Button>
-                </div>
+                </div>}
             </form>
+
             <Toast ref={toast} />
         </Card>
     )

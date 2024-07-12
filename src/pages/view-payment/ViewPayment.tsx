@@ -6,13 +6,14 @@ import { db, collection, getDocs, query } from '../../firebase';
 import AddPayment, { ISelect, TYPE } from '../add-payment/AddPayment';
 import { Dialog } from 'primereact/dialog';
 import { LoaderHook } from '../../context/loaderProvider';
-import { where } from 'firebase/firestore/lite';
+import { orderBy, where } from 'firebase/firestore/lite';
 import IsAdmin from '../../hooks/Admin.hook';
+import { format } from 'date-fns';
 
 type Payment = {
     user: ISelect;
     careOf: ISelect
-    date: string;
+    date:  Date;
     amount: number
     mode: ISelect,
     userId: string
@@ -25,14 +26,34 @@ const ViewPayment: React.FC = () => {
     const [modalVisible, setModalVisible] = React.useState<boolean>(false);
     const {hideSpinner, showSpinner} = LoaderHook();
     const [isAdmin,user] = IsAdmin();
+    const [totalAmount, setTotalAmount] = React.useState(0)
+    let totalAmountC = 0;
 
     const getPayment = async () => {
         showSpinner();
-        const customDocRef = collection(db, 'payment');
-        const paymentRef = await getDocs(customDocRef);
-        const payment = paymentRef.docs.map(x => {
-            return { ...x.data(), id: x.id }
-        }) as Payment[]
+        const paymentRef = collection(db, 'payment');
+        const q = query(
+            paymentRef,
+            orderBy('date')
+        )
+
+        const data =  await getDocs(q);
+        const paymentData = data.docs.map(x => x.data()) as Payment[]
+        
+
+        let payment:Payment[] = paymentData.map((payment) => {
+            totalAmountC += +payment.amount;
+
+                return {
+                    ...payment,
+                    date:  new Date(payment.date)
+                }
+        })
+
+        setTotalAmount(totalAmountC)
+
+        payment =  payment.sort((a: Payment,b: Payment) => b.date.getTime() - a.date.getTime())
+
        setPayment(payment);
        hideSpinner();
     }
@@ -43,7 +64,8 @@ const ViewPayment: React.FC = () => {
         const collectionRef = collection(db, 'payment');
         const q = query(
             collectionRef,
-            where('userId', '==', userId)
+            where('userId', '==', userId),
+            orderBy('date')
         );
 
       try{
@@ -90,13 +112,16 @@ const ViewPayment: React.FC = () => {
     };
 
     return (
-        <>
-            <DataTable paginator rows={5} rowsPerPageOptions={[5, 10, 15, 20]} value={payment} tableStyle={{ minWidth: '50rem' }}>
+        <>  
+            <div> TOTAL RECORDS: { payment.length } </div>
+            <div> TOTAL AMOUNT RECEIVED: { totalAmount } </div>
+
+            <DataTable paginator  rows={25} rowsPerPageOptions={[25, 50, 75, 100]} value={payment} tableStyle={{ minWidth: '50rem' }}>
                 <Column field="user.name" header="Member Id"></Column>
                 <Column field="user.username" header="Member Name"></Column>
-                <Column field="careOf.username" header="Care of" body={(row) => <span> {row.careOf.code} ({row.careOf.username})</span> }></Column>
+                <Column field="careOf.username" header="Care of" body={(row) =>  row?.careOf?.code ? <span> {row.careOf.code} ({row.careOf.username})</span>: <></> }></Column>
                 <Column field="amount" header="Amount" body={(row) => `₹ ${row.amount}`}></Column>
-                <Column field="date" header="Date"></Column>
+                <Column field="date"  header="Date" body={(row) => <span>{format(row?.date, 'dd-MMM-yyyy')} </span>}></Column>
                 <Column field="amount" header="Mode of Payment" body={modeOfPaymentBody}></Column>
                 {isAdmin && (
                 <Column header="Action" body={statusBodyTemplate}></Column> 

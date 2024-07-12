@@ -16,7 +16,6 @@ import Prizes from './pages/prizes/Prizes';
 import AddWinner from './pages/add-winner/AddWinner';
 import LoaderProvider from './context/loaderProvider';
 import IsAdmin from './hooks/Admin.hook';
-
 const App: React.FC = () => {
   const [isAdmin, , user] = IsAdmin();
 
