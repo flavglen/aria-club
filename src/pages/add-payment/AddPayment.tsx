@@ -11,6 +11,7 @@ import { LoaderHook } from '../../context/loaderProvider';
 import { ToastHook } from '../../context/toastProvider';
 import { AddBulkPayment } from '../bulk-add-payment/bulk-add-payment';
 import { SelectButton } from 'primereact/selectbutton';
+import { format } from 'date-fns';
 
 export enum TYPE  {
     ADD = 'Add',
@@ -102,7 +103,7 @@ const AddPayment: React.FC<IAddPayment> = ({type =  TYPE.ADD , paymentDataForEdi
         if(type === TYPE.EDIT && !paymentPayload?.id) return;
 
         if(paymentPayload.date) {
-            paymentPayload.date = paymentPayload.date.toLocaleString()
+            paymentPayload.date = format(paymentPayload.date, 'MM-dd-yyyy');
         }
 
        paymentPayload.userId = paymentPayload.user.userId;
@@ -157,10 +158,12 @@ const AddPayment: React.FC<IAddPayment> = ({type =  TYPE.ADD , paymentDataForEdi
     return (
         <Card title={`${type} Payment`}>
             
-            <div className="flex flex-column gap-2 flex-col">
-                <label htmlFor="customer">Import Payment from Excel:</label>
-                <SelectButton  value={value} onChange={(e) => setValue(e.value)} options={options} />
-            </div>
+            {
+                type !== TYPE.EDIT && <div className="flex flex-column gap-2 flex-col">
+                    <label htmlFor="customer">Import Payment from Excel:</label>
+                    <SelectButton  value={value} onChange={(e) => setValue(e.value)} options={options} />
+                </div>
+            }
            
             <form>
                {value === 'off' ? ( <>

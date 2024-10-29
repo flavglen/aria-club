@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { collection, db, doc  } from '../../firebase';
-import { getDocs, query, where, writeBatch } from 'firebase/firestore/lite';
+import { getDocs, query, setDoc, where, writeBatch } from 'firebase/firestore/lite';
 import * as xlsx from "xlsx";
 import { Button } from 'primereact/button';
-import { DeletePayment } from '../delete-payment/delete-payment';
+import { ToastHook } from '../../context/toastProvider';
+import { useNavigate } from 'react-router-dom';
 
 interface IBPayment {
     date: string
@@ -15,6 +16,8 @@ interface IBPayment {
 export const AddBulkPayment = () => {
     const [jsonData, setJsonData] = useState<IBPayment[]>([]);
     const ref = useRef(null)
+    const { fireToast } = ToastHook();
+    const navigate = useNavigate();
 
     // Function to convert Excel date to JavaScript date
     function excelDateToJSDate(excelDate) {
@@ -44,10 +47,10 @@ export const AddBulkPayment = () => {
         // bulk payment insert
         const batch = writeBatch(db);
         let operationCounter = 0;
-        const invalidUserIds:{userId:string, name: string, data: unknown}[] = [];
+        const invalidUserIds:{userId:string, name: string, data: unknown, paymentData: unknown}[] = [];
 
         console.log('allUsers', allUsers)
-
+        const randomID = window.crypto.randomUUID();
         allUsers.forEach(async (user) => {
             const paymentData = jsonData.find( d => d.memId.toString() === user.memberId )
 
@@ -56,6 +59,7 @@ export const AddBulkPayment = () => {
                         amount: paymentData.amt,
                         bulkInsert: true,
                         bulkInsertDate: new Date().toISOString(),
+                        uid: randomID,
                         careOf: null,
                         date: paymentData.date,
                         mode: { code:  paymentData.mop.toLowerCase(),  name:  paymentData.mop },
@@ -72,7 +76,7 @@ export const AddBulkPayment = () => {
                 batch.set(paymentDocRef, paymentDataObj);
                 operationCounter++;
              }else {
-                invalidUserIds.push({ userId: user.memberId,  name: user.name, data: user})
+                invalidUserIds.push({ userId: user.memberId,  name: user.name, data: user, paymentData: paymentData})
              }
 
         });
@@ -82,12 +86,18 @@ export const AddBulkPayment = () => {
         // Commit the batch if the limit is reached
         if (operationCounter <= 999) {
             await batch.commit();
-            console.log('Batch committed.');
+            console.log('Batch committed.', randomID);
             //batch = writeBatch(db);
             operationCounter = 0;
+            fireToast({severity:'success', summary: 'Success', detail:'Payment has been saved', life: 3000});
+            navigate('/view-payment');
         } else {
              alert('cannot insert more than 999 rows')
         }
+
+        // update logs
+        const docRef = doc(db, 'bulkInsertLogs',  new Date().getTime().toString());
+        await setDoc(docRef, {data: {invalidUserIds}})
     }
 
 
@@ -112,14 +122,12 @@ export const AddBulkPayment = () => {
                 }
 
                 const keys = Object.keys(json[0])
-                const requiredKeys = ['date', 'amount', 'id', 'name'];
-
-                const allKeysPresent = requiredKeys.every(key => key in keys);
-
-
+                console.log('JSON_DATA', keys, json)
+                const requiredKeys = ['date', 'amt', 'memId', 'mop'];
+                const allKeysPresent = requiredKeys.every(key => keys.includes(key));
 
                 if(!allKeysPresent) {
-                    alert('Invalid Excel file, make sure you have column names (date	amt	memId, mop)');
+                    alert('Invalid Excel file, make sure you have column names (date, amt, memId, mop)');
                     return;
                 }
 

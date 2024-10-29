@@ -16,6 +16,7 @@ import Prizes from './pages/prizes/Prizes';
 import AddWinner from './pages/add-winner/AddWinner';
 import LoaderProvider from './context/loaderProvider';
 import IsAdmin from './hooks/Admin.hook';
+import { About } from './pages/About';
 const App: React.FC = () => {
   const [isAdmin, , user] = IsAdmin();
 
@@ -31,6 +32,10 @@ const App: React.FC = () => {
     {
       path: "login",
       element: <Login />
+    },
+    {
+      path: "about",
+      element: <About />
     },
     {
       path: "*",

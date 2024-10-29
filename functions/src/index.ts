@@ -8,7 +8,7 @@
  */
 
 import * as functions from "firebase-functions";
-import {checkIsAdmin, createUser, extractBearer} from "./utils";
+import {checkIsAdmin, createBulkUsers, createUser, extractBearer} from "./utils";
 import * as cors from "cors";
 import * as _express from "express";
 import {Request, Response} from "express";
@@ -42,6 +42,24 @@ app.post("/addUser", async (req: Request, res:Response) => {
 
 app.get("/changeRole", async (req: Request, res:Response) => {
   res.status(200).json({success: true});
+});
+
+app.post("/bulkUsers", async (req: Request, res:Response) => {
+  const token = extractBearer(req);
+  const isAdmin = await checkIsAdmin(token);
+
+  if (!isAdmin) {
+    res.status(403).json({success: false, message: "Only admins can add users"});
+    return;
+  }
+
+  const result = await createBulkUsers(req.body) as any;
+  if (!result.success) {
+    res.status(400).json(result);
+    return;
+  }
+
+  res.status(200).json(result);
 });
 
 // export const changeRole = functions.region("europe-west1")
